@@ -28,15 +28,27 @@
         <div v-else class="day-row__empty">
           No shifts
         </div>
-        <button 
-          class="day-row__add-shift"
-          :class="{ 'is-disabled': shifts.length >= 3 }"
-          @click.stop="handleAddClick"
-          :disabled="shifts.length >= 3"
-          :title="shifts.length >= 3 ? 'Maximum shifts reached' : 'Add shift'"
-        >
-          +
-        </button>
+        <div class="day-row__actions">
+          <button 
+            class="day-row__action-btn day-row__new-btn"
+            :class="{ 'is-disabled': shifts.length >= 3 }"
+            @click.stop="handleNewClick"
+            :disabled="shifts.length >= 3"
+            :title="shifts.length >= 3 ? 'Maximum shifts reached' : 'Add new shift'"
+          >
+            New
+          </button>
+          <button 
+            v-if="clipboardShift"
+            class="day-row__action-btn day-row__add-btn"
+            :class="{ 'is-disabled': shifts.length >= 3 || hasClipboardShift }"
+            @click.stop="applyClipboardShift"
+            :disabled="shifts.length >= 3 || hasClipboardShift"
+            :title="getAddButtonTitle"
+          >
+            Add
+          </button>
+        </div>
       </div>
       <div class="day-row__expand" v-if="isExpanded">
         <span class="icon" :class="{ 'is-rotated': isExpanded }">▼</span>
@@ -160,15 +172,25 @@ const isValidShift = computed(() => {
          currentShift.value.startTime < currentShift.value.endTime;
 });
 
-// Methods
-const handleAddClick = () => {
-  if (props.shifts.length >= 3) return;
+const hasClipboardShift = computed(() => {
+  if (!props.clipboardShift) return false;
   
-  if (props.clipboardShift) {
-    applyClipboardShift();
-  } else {
-    emit('expand');
-  }
+  return props.shifts.some(shift => 
+    shift.startTime === props.clipboardShift.startTime && 
+    shift.endTime === props.clipboardShift.endTime
+  );
+});
+
+const getAddButtonTitle = computed(() => {
+  if (props.shifts.length >= 3) return 'Maximum shifts reached';
+  if (hasClipboardShift.value) return 'This shift has already been added';
+  return 'Add copied shift';
+});
+
+// Methods
+const handleNewClick = () => {
+  if (props.shifts.length >= 3) return;
+  emit('expand');
 };
 
 const formatShiftTime = (time) => {
@@ -209,7 +231,7 @@ const applyAndAddMore = () => {
 };
 
 const applyClipboardShift = () => {
-  if (!props.clipboardShift || props.shifts.length >= 3) return;
+  if (!props.clipboardShift || props.shifts.length >= 3 || hasClipboardShift.value) return;
   
   const newShift = {
     id: Date.now(),
@@ -344,34 +366,49 @@ const resetForm = () => {
     }
   }
 
-  &__add-shift {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
+  &__actions {
+    display: flex;
+    gap: $spacing-xs;
+    margin-left: auto;
+  }
+
+  &__action-btn {
+    padding: $spacing-xs $spacing-sm;
+    border-radius: $border-radius;
     border: none;
-    background: rgba($primary, 0.1);
-    color: $primary;
+    font-size: $font-size-sm;
+    cursor: pointer;
+    transition: all $transition-speed ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    font-size: 18px;
-    line-height: 1;
-    padding: 0;
-    transition: all $transition-speed ease;
-    margin-left: auto;
-
-    &:hover:not(.is-disabled) {
-      background: $primary;
-      color: white;
-      transform: scale(1.1);
-    }
+    font-weight: 500;
 
     &.is-disabled {
       opacity: 0.5;
       cursor: not-allowed;
-      background: rgba($text, 0.1);
-      color: rgba($text, 0.4);
+      background: rgba($text, 0.1) !important;
+      color: rgba($text, 0.4) !important;
+    }
+  }
+
+  &__new-btn {
+    background: rgba($primary, 0.1);
+    color: $primary;
+
+    &:hover:not(.is-disabled) {
+      background: $primary;
+      color: white;
+    }
+  }
+
+  &__add-btn {
+    background: rgba($secondary, 0.1);
+    color: $secondary;
+
+    &:hover:not(.is-disabled) {
+      background: $secondary;
+      color: white;
     }
   }
 
