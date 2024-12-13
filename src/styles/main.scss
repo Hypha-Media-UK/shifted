@@ -1,0 +1,126 @@
+@import 'abstracts/variables';
+
+// Reset and base styles
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  font-family: $font-family-base;
+  color: $text;
+  background-color: $background;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// Common utility classes
+.container {
+  max-width: $breakpoint-lg;
+  margin: 0 auto;
+  padding: 0 $spacing-md;
+}
+
+.card {
+  background: white;
+  border-radius: $border-radius;
+  box-shadow: $box-shadow;
+  padding: $spacing-md;
+}
+
+// Button styles
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $border-radius;
+  border: none;
+  font-size: $font-size-base;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all $transition-speed ease;
+  
+  &:hover {
+    transform: translateY(-1px);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+  
+  &-primary {
+    background-color: $primary;
+    color: white;
+    
+    &:hover {
+      background-color: darken($primary, 10%);
+    }
+  }
+  
+  &-secondary {
+    background-color: $secondary;
+    color: white;
+    
+    &:hover {
+      background-color: darken($secondary, 10%);
+    }
+  }
+  
+  &-danger {
+    background-color: $danger;
+    color: white;
+    
+    &:hover {
+      background-color: darken($danger, 10%);
+    }
+  }
+}
+
+// Form styles
+.form-group {
+  margin-bottom: $spacing-md;
+}
+
+.form-control {
+  width: 100%;
+  padding: $spacing-sm;
+  border: 1px solid $border;
+  border-radius: $border-radius;
+  font-size: $font-size-base;
+  transition: border-color $transition-speed ease;
+  
+  &:focus {
+    outline: none;
+    border-color: $primary;
+  }
+}
+
+// Animation classes
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity $transition-speed ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-down-enter-active,
+.slide-down-leave-active {
+  transition: all $transition-speed ease;
+  max-height: 1000px;
+}
+
+.slide-down-enter-from,
+.slide-down-leave-to {
+  max-height: 0;
+  opacity: 0;
+}
