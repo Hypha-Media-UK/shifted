@@ -1,9 +1,6 @@
 <template>
   <div class="day-row" :class="{ 'is-expanded': isExpanded }">
-    <div 
-      class="day-row__header"
-      @click="handleRowClick"
-    >
+    <div class="day-row__header">
       <div class="day-row__date">
         <span class="day-row__weekday">{{ formattedWeekday }}</span>
         <span class="day-row__day">{{ formattedDay }}</span>
@@ -27,18 +24,19 @@
               ×
             </button>
           </div>
-          <button 
-            v-if="shifts.length < 3"
-            class="day-row__add-shift"
-            @click.stop="handleAddClick"
-            title="Add shift"
-          >
-            +
-          </button>
         </template>
         <div v-else class="day-row__empty">
-          {{ clipboardShift ? 'Click to add shift' : 'No shifts' }}
+          No shifts
         </div>
+        <button 
+          class="day-row__add-shift"
+          :class="{ 'is-disabled': shifts.length >= 3 }"
+          @click.stop="handleAddClick"
+          :disabled="shifts.length >= 3"
+          :title="shifts.length >= 3 ? 'Maximum shifts reached' : 'Add shift'"
+        >
+          +
+        </button>
       </div>
       <div class="day-row__expand" v-if="isExpanded">
         <span class="icon" :class="{ 'is-rotated': isExpanded }">▼</span>
@@ -163,19 +161,12 @@ const isValidShift = computed(() => {
 });
 
 // Methods
-const handleRowClick = () => {
-  // Only expand on row click if there are no shifts
-  if (props.shifts.length === 0) {
-    if (props.clipboardShift) {
-      applyClipboardShift();
-    } else {
-      emit('expand');
-    }
-  }
-};
-
 const handleAddClick = () => {
-  if (!isEditing.value) {
+  if (props.shifts.length >= 3) return;
+  
+  if (props.clipboardShift) {
+    applyClipboardShift();
+  } else {
     emit('expand');
   }
 };
@@ -287,11 +278,6 @@ const resetForm = () => {
     align-items: center;
     padding: $spacing-md;
     transition: background-color $transition-speed ease;
-    cursor: pointer;
-
-    &:hover {
-      background-color: rgba($primary, 0.05);
-    }
   }
 
   &__date {
@@ -375,10 +361,17 @@ const resetForm = () => {
     transition: all $transition-speed ease;
     margin-left: auto;
 
-    &:hover {
+    &:hover:not(.is-disabled) {
       background: $primary;
       color: white;
       transform: scale(1.1);
+    }
+
+    &.is-disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: rgba($text, 0.1);
+      color: rgba($text, 0.4);
     }
   }
 
