@@ -41,9 +41,9 @@
           <button 
             v-if="clipboardShift"
             class="day-row__action-btn day-row__add-btn"
-            :class="{ 'is-disabled': shifts.length >= 3 || hasClipboardShift }"
+            :class="{ 'is-disabled': shifts.length >= 3 || hasClipboardShift || wouldClipboardShiftOverlap }"
             @click.stop="applyClipboardShift"
-            :disabled="shifts.length >= 3 || hasClipboardShift"
+            :disabled="shifts.length >= 3 || hasClipboardShift || wouldClipboardShiftOverlap"
             :title="getAddButtonTitle"
           >
             Add
@@ -77,12 +77,16 @@
             >
           </div>
           
+          <div v-if="validationWarning" class="shift-editor__warning">
+            {{ validationWarning }}
+          </div>
+
           <div class="shift-editor__actions">
             <template v-if="isEditing">
               <button 
                 class="btn btn-primary" 
                 @click="updateShift"
-                :disabled="!isValidShift"
+                :disabled="!isValidShift || hasOverlap"
               >
                 Update
               </button>
@@ -93,14 +97,14 @@
               <button 
                 class="btn btn-primary" 
                 @click="applyShift"
-                :disabled="!isValidShift || shifts.length >= 3"
+                :disabled="!isValidShift || hasOverlap || shifts.length >= 3"
               >
                 Apply Once
               </button>
               <button 
                 class="btn btn-secondary" 
                 @click="applyAndAddMore"
-                :disabled="!isValidShift || shifts.length >= 3"
+                :disabled="!isValidShift || hasOverlap || shifts.length >= 3"
               >
                 Apply and Add to More
               </button>
@@ -113,9 +117,18 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { format } from 'date-fns';
+
+interface ShiftTime {
+  startTime: string;
+  endTime: string;
+}
+
+interface Shift extends ShiftTime {
+  id: number;
+}
 
 const props = defineProps({
   date: {
@@ -123,7 +136,7 @@ const props = defineProps({
     required: true
   },
   shifts: {
-    type: Array,
+    type: Array as () => Shift[],
     default: () => []
   },
   accentColor: {
@@ -131,7 +144,7 @@ const props = defineProps({
     default: '#4A90E2'
   },
   clipboardShift: {
-    type: Object,
+    type: Object as () => ShiftTime | null,
     default: null
   },
   isExpanded: {
@@ -143,20 +156,36 @@ const props = defineProps({
 const emit = defineEmits(['update-shifts', 'copy-shift', 'clear-clipboard', 'expand']);
 
 const isEditing = ref(false);
-const editingShiftId = ref(null);
-const currentShift = ref({
+const editingShiftId = ref<number | null>(null);
+const currentShift = ref<ShiftTime>({
   startTime: '',
   endTime: ''
 });
 
-// Watch for changes in isExpanded prop
 watch(() => props.isExpanded, (newValue) => {
   if (!newValue) {
     resetForm();
   }
 });
 
-// Computed properties
+const timeToMinutes = (time: string): number => {
+  const [hours, minutes] = time.split(':').map(Number);
+  return hours * 60 + minutes;
+};
+
+const doShiftsOverlap = (shift1: ShiftTime, shift2: ShiftTime): boolean => {
+  const start1 = timeToMinutes(shift1.startTime);
+  const end1 = timeToMinutes(shift1.endTime);
+  const start2 = timeToMinutes(shift2.startTime);
+  const end2 = timeToMinutes(shift2.endTime);
+
+  const adjustedEnd1 = end1 < start1 ? end1 + 24 * 60 : end1;
+  const adjustedEnd2 = end2 < start2 ? end2 + 24 * 60 : end2;
+
+  return (start1 < adjustedEnd2 && adjustedEnd1 > start2) ||
+         (start2 < adjustedEnd1 && adjustedEnd2 > start1);
+};
+
 const formattedWeekday = computed(() => format(props.date, 'EEE'));
 const formattedDay = computed(() => format(props.date, 'd'));
 
@@ -169,60 +198,81 @@ const sortedShifts = computed(() => {
 const isValidShift = computed(() => {
   if (!currentShift.value.startTime || !currentShift.value.endTime) return false;
   
-  // Convert times to minutes since midnight for comparison
-  const [startHours, startMinutes] = currentShift.value.startTime.split(':').map(Number);
-  const [endHours, endMinutes] = currentShift.value.endTime.split(':').map(Number);
+  const startTotalMinutes = timeToMinutes(currentShift.value.startTime);
+  const endTotalMinutes = timeToMinutes(currentShift.value.endTime);
   
-  const startTotalMinutes = startHours * 60 + startMinutes;
-  const endTotalMinutes = endHours * 60 + endMinutes;
-  
-  // If end time is less than start time, it means the shift spans across midnight
-  // In this case, we add 24 hours (1440 minutes) to the end time for comparison
   const adjustedEndMinutes = endTotalMinutes < startTotalMinutes 
     ? endTotalMinutes + (24 * 60) 
     : endTotalMinutes;
   
-  // Ensure the shift is not longer than 24 hours
   return adjustedEndMinutes - startTotalMinutes <= 24 * 60;
+});
+
+const hasOverlap = computed(() => {
+  if (!currentShift.value.startTime || !currentShift.value.endTime) return false;
+  
+  return props.shifts.some(shift => {
+    if (isEditing.value && shift.id === editingShiftId.value) return false;
+    return doShiftsOverlap(currentShift.value, shift);
+  });
+});
+
+const wouldClipboardShiftOverlap = computed(() => {
+  if (!props.clipboardShift) return false;
+  return props.shifts.some(shift => doShiftsOverlap(props.clipboardShift!, shift));
 });
 
 const hasClipboardShift = computed(() => {
   if (!props.clipboardShift) return false;
-  
   return props.shifts.some(shift => 
-    shift.startTime === props.clipboardShift.startTime && 
-    shift.endTime === props.clipboardShift.endTime
+    shift.startTime === props.clipboardShift!.startTime && 
+    shift.endTime === props.clipboardShift!.endTime
   );
+});
+
+const validationWarning = computed(() => {
+  if (!currentShift.value.startTime || !currentShift.value.endTime) return '';
+  
+  if (!isValidShift.value) {
+    return 'Shift duration cannot exceed 24 hours';
+  }
+  
+  if (hasOverlap.value) {
+    return 'This shift overlaps with an existing shift';
+  }
+  
+  return '';
 });
 
 const getAddButtonTitle = computed(() => {
   if (props.shifts.length >= 3) return 'Maximum shifts reached';
   if (hasClipboardShift.value) return 'This shift has already been added';
+  if (wouldClipboardShiftOverlap.value) return 'This shift would overlap with an existing shift';
   return 'Add copied shift';
 });
 
-// Methods
 const handleNewClick = () => {
   if (props.shifts.length >= 3) return;
   emit('expand');
 };
 
-const formatShiftTime = (time) => {
+const formatShiftTime = (time: string) => {
   const [hours, minutes] = time.split(':');
   return `${hours}:${minutes}`;
 };
 
-const quickDelete = (shiftId) => {
+const quickDelete = (shiftId: number) => {
   const updatedShifts = props.shifts.filter(shift => shift.id !== shiftId);
   emit('update-shifts', updatedShifts);
 };
 
 const applyShift = () => {
-  if (!isValidShift.value) return;
+  if (!isValidShift.value || hasOverlap.value) return;
   
-  const newShift = {
+  const newShift: Shift = {
     id: Date.now(),
-    ...currentShift.value
+    startTime: currentShift.value.startTime,
+    endTime: currentShift.value.endTime
   };
   
   emit('update-shifts', [...props.shifts, newShift]);
@@ -231,35 +281,49 @@ const applyShift = () => {
 };
 
 const applyAndAddMore = () => {
-  if (!isValidShift.value) return;
+  if (!isValidShift.value || hasOverlap.value) return;
   
-  const newShift = {
+  const newShift: Shift = {
     id: Date.now(),
-    ...currentShift.value
+    startTime: currentShift.value.startTime,
+    endTime: currentShift.value.endTime
   };
   
   emit('update-shifts', [...props.shifts, newShift]);
-  emit('copy-shift', { ...currentShift.value });
+  emit('copy-shift', { 
+    startTime: currentShift.value.startTime, 
+    endTime: currentShift.value.endTime 
+  });
   resetForm();
   emit('expand');
 };
 
 const applyClipboardShift = () => {
-  if (!props.clipboardShift || props.shifts.length >= 3 || hasClipboardShift.value) return;
+  if (!props.clipboardShift || 
+      props.shifts.length >= 3 || 
+      hasClipboardShift.value || 
+      wouldClipboardShiftOverlap.value) return;
   
-  const newShift = {
+  const newShift: Shift = {
     id: Date.now(),
-    ...props.clipboardShift
+    startTime: props.clipboardShift.startTime,
+    endTime: props.clipboardShift.endTime
   };
   
   emit('update-shifts', [...props.shifts, newShift]);
 };
 
 const updateShift = () => {
-  if (!isValidShift.value) return;
+  if (!isValidShift.value || hasOverlap.value) return;
   
   const updatedShifts = props.shifts.map(shift => 
-    shift.id === editingShiftId.value ? { ...shift, ...currentShift.value } : shift
+    shift.id === editingShiftId.value 
+      ? { 
+          ...shift, 
+          startTime: currentShift.value.startTime,
+          endTime: currentShift.value.endTime
+        } 
+      : shift
   );
   
   emit('update-shifts', updatedShifts);
@@ -274,10 +338,13 @@ const deleteShift = () => {
   emit('expand');
 };
 
-const editShift = (shift) => {
+const editShift = (shift: Shift) => {
   isEditing.value = true;
   editingShiftId.value = shift.id;
-  currentShift.value = { ...shift };
+  currentShift.value = { 
+    startTime: shift.startTime,
+    endTime: shift.endTime
+  };
   emit('clear-clipboard');
   emit('expand');
 };
@@ -450,6 +517,15 @@ const resetForm = () => {
 }
 
 .shift-editor {
+  &__warning {
+    margin-top: $spacing-sm;
+    padding: $spacing-xs $spacing-sm;
+    background-color: rgba($danger, 0.1);
+    color: $danger;
+    border-radius: $border-radius;
+    font-size: $font-size-sm;
+  }
+
   &__actions {
     display: flex;
     gap: $spacing-sm;
