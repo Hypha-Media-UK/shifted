@@ -7,23 +7,14 @@
       </div>
       <div class="day-row__shifts">
         <template v-if="shifts.length">
-          <div 
-            v-for="shift in sortedShifts" 
-            :key="shift.id" 
-            class="day-row__shift-pill"
-            :style="{ backgroundColor: $props.accentColor + '33' }"
-          >
-            <span @click.stop="editShift(shift)">
-              {{ formatShiftTime(shift.startTime) }} - {{ formatShiftTime(shift.endTime) }}
-            </span>
-            <button 
-              class="day-row__quick-delete" 
-              @click.stop="quickDelete(shift.id)"
-              title="Quick delete"
-            >
-              ×
-            </button>
-          </div>
+          <ShiftPill
+            v-for="shift in sortedShifts"
+            :key="shift.id"
+            :shift="shift"
+            :accent-color="accentColor"
+            @edit="editShift(shift)"
+            @delete="quickDelete(shift.id)"
+          />
         </template>
         <div v-else class="day-row__empty">
           No shifts
@@ -57,61 +48,18 @@
 
     <Transition name="slide-down">
       <div v-if="isExpanded" class="day-row__content">
-        <div class="shift-editor">
-          <div class="form-group">
-            <label>Start Time</label>
-            <input 
-              type="time" 
-              class="form-control" 
-              v-model="currentShift.startTime"
-              :disabled="shifts.length >= 3 && !isEditing"
-            >
-          </div>
-          <div class="form-group">
-            <label>End Time</label>
-            <input 
-              type="time" 
-              class="form-control" 
-              v-model="currentShift.endTime"
-              :disabled="shifts.length >= 3 && !isEditing"
-            >
-          </div>
-          
-          <div v-if="validationWarning" class="shift-editor__warning">
-            {{ validationWarning }}
-          </div>
-
-          <div class="shift-editor__actions">
-            <template v-if="isEditing">
-              <button 
-                class="btn btn-primary" 
-                @click="updateShift"
-                :disabled="!isValidShift || hasOverlap"
-              >
-                Update
-              </button>
-              <button class="btn btn-danger" @click="deleteShift">Delete</button>
-              <button class="btn btn-secondary" @click="cancelEdit">Cancel</button>
-            </template>
-            <template v-else>
-              <button 
-                class="btn btn-primary" 
-                @click="applyShift"
-                :disabled="!isValidShift || hasOverlap || shifts.length >= 3"
-              >
-                Apply Once
-              </button>
-              <button 
-                class="btn btn-secondary" 
-                @click="applyAndAddMore"
-                :disabled="!isValidShift || hasOverlap || shifts.length >= 3"
-              >
-                Apply and Add to More
-              </button>
-              <button class="btn btn-secondary" @click="cancel">Cancel</button>
-            </template>
-          </div>
-        </div>
+        <ShiftEditor
+          :shift="currentShift"
+          :is-editing="isEditing"
+          :disabled="shifts.length >= 3 && !isEditing"
+          :has-overlap="hasOverlap"
+          :warning="validationWarning"
+          @update="updateShift"
+          @delete="deleteShift"
+          @cancel="cancelEdit"
+          @apply="applyShift"
+          @apply-and-copy="applyAndAddMore"
+        />
       </div>
     </Transition>
   </div>
@@ -120,6 +68,8 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { format } from 'date-fns';
+import ShiftPill from './ShiftPill.vue';
+import ShiftEditor from './ShiftEditor.vue';
 
 interface ShiftTime {
   startTime: string;
@@ -190,22 +140,7 @@ const formattedWeekday = computed(() => format(props.date, 'EEE'));
 const formattedDay = computed(() => format(props.date, 'd'));
 
 const sortedShifts = computed(() => {
-  return [...props.shifts].sort((a, b) => {
-    return a.startTime.localeCompare(b.startTime);
-  });
-});
-
-const isValidShift = computed(() => {
-  if (!currentShift.value.startTime || !currentShift.value.endTime) return false;
-  
-  const startTotalMinutes = timeToMinutes(currentShift.value.startTime);
-  const endTotalMinutes = timeToMinutes(currentShift.value.endTime);
-  
-  const adjustedEndMinutes = endTotalMinutes < startTotalMinutes 
-    ? endTotalMinutes + (24 * 60) 
-    : endTotalMinutes;
-  
-  return adjustedEndMinutes - startTotalMinutes <= 24 * 60;
+  return [...props.shifts].sort((a, b) => a.startTime.localeCompare(b.startTime));
 });
 
 const hasOverlap = computed(() => {
@@ -232,15 +167,7 @@ const hasClipboardShift = computed(() => {
 
 const validationWarning = computed(() => {
   if (!currentShift.value.startTime || !currentShift.value.endTime) return '';
-  
-  if (!isValidShift.value) {
-    return 'Shift duration cannot exceed 24 hours';
-  }
-  
-  if (hasOverlap.value) {
-    return 'This shift overlaps with an existing shift';
-  }
-  
+  if (hasOverlap.value) return 'This shift overlaps with an existing shift';
   return '';
 });
 
@@ -256,18 +183,12 @@ const handleNewClick = () => {
   emit('expand');
 };
 
-const formatShiftTime = (time: string) => {
-  const [hours, minutes] = time.split(':');
-  return `${hours}:${minutes}`;
-};
-
 const quickDelete = (shiftId: number) => {
-  const updatedShifts = props.shifts.filter(shift => shift.id !== shiftId);
-  emit('update-shifts', updatedShifts);
+  emit('update-shifts', props.shifts.filter(shift => shift.id !== shiftId));
 };
 
 const applyShift = () => {
-  if (!isValidShift.value || hasOverlap.value) return;
+  if (hasOverlap.value) return;
   
   const newShift: Shift = {
     id: Date.now(),
@@ -281,7 +202,7 @@ const applyShift = () => {
 };
 
 const applyAndAddMore = () => {
-  if (!isValidShift.value || hasOverlap.value) return;
+  if (hasOverlap.value) return;
   
   const newShift: Shift = {
     id: Date.now(),
@@ -290,10 +211,7 @@ const applyAndAddMore = () => {
   };
   
   emit('update-shifts', [...props.shifts, newShift]);
-  emit('copy-shift', { 
-    startTime: currentShift.value.startTime, 
-    endTime: currentShift.value.endTime 
-  });
+  emit('copy-shift', { ...currentShift.value });
   resetForm();
   emit('expand');
 };
@@ -314,7 +232,7 @@ const applyClipboardShift = () => {
 };
 
 const updateShift = () => {
-  if (!isValidShift.value || hasOverlap.value) return;
+  if (hasOverlap.value) return;
   
   const updatedShifts = props.shifts.map(shift => 
     shift.id === editingShiftId.value 
@@ -332,8 +250,7 @@ const updateShift = () => {
 };
 
 const deleteShift = () => {
-  const updatedShifts = props.shifts.filter(shift => shift.id !== editingShiftId.value);
-  emit('update-shifts', updatedShifts);
+  emit('update-shifts', props.shifts.filter(shift => shift.id !== editingShiftId.value));
   resetForm();
   emit('expand');
 };
@@ -350,11 +267,6 @@ const editShift = (shift: Shift) => {
 };
 
 const cancelEdit = () => {
-  resetForm();
-  emit('expand');
-};
-
-const cancel = () => {
   resetForm();
   emit('expand');
 };
@@ -405,46 +317,6 @@ const resetForm = () => {
     gap: $spacing-sm;
     margin: 0 $spacing-md;
     align-items: center;
-  }
-
-  &__shift-pill {
-    padding: $spacing-xs $spacing-sm;
-    border-radius: 16px;
-    font-size: $font-size-sm;
-    display: flex;
-    align-items: center;
-    gap: $spacing-xs;
-
-    > span {
-      cursor: pointer;
-      transition: transform $transition-speed ease;
-
-      &:hover {
-        transform: translateY(-1px);
-      }
-    }
-  }
-
-  &__quick-delete {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    border: none;
-    background: rgba($danger, 0.1);
-    color: $danger;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 16px;
-    line-height: 1;
-    padding: 0;
-    transition: all $transition-speed ease;
-
-    &:hover {
-      background: $danger;
-      color: white;
-    }
   }
 
   &__actions {
@@ -513,23 +385,6 @@ const resetForm = () => {
     padding: $spacing-md;
     border-top: 1px solid $border;
     background-color: rgba($background, 0.5);
-  }
-}
-
-.shift-editor {
-  &__warning {
-    margin-top: $spacing-sm;
-    padding: $spacing-xs $spacing-sm;
-    background-color: rgba($danger, 0.1);
-    color: $danger;
-    border-radius: $border-radius;
-    font-size: $font-size-sm;
-  }
-
-  &__actions {
-    display: flex;
-    gap: $spacing-sm;
-    margin-top: $spacing-md;
   }
 }
 </style>
