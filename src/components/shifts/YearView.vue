@@ -11,58 +11,47 @@
     </div>
 
     <div class="year-view__grid">
-      <div 
-        v-for="month in months" 
+      <MonthGrid
+        v-for="month in months"
         :key="month.date"
-        class="year-view__month"
-      >
-        <h3 class="year-view__month-title">{{ month.name }}</h3>
-        <div class="year-view__month-grid">
-          <div 
-            v-for="day in month.days" 
-            :key="day.date"
-            class="year-view__day"
-            :class="{
-              'is-empty': !day.inMonth,
-              'has-shifts': day.shifts.length > 0
-            }"
-            :style="day.shifts.length ? { backgroundColor: accentColor + '33' } : {}"
-          >
-            <span v-if="day.inMonth">{{ day.dayOfMonth }}</span>
-          </div>
-        </div>
-      </div>
+        :month-date="new Date(month.date)"
+        :days="month.days"
+        :accent-color="accentColor"
+      />
     </div>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue';
 import {
   startOfYear,
   endOfYear,
   eachMonthOfInterval,
-  format,
   getYear,
   addYears,
   subYears,
   startOfMonth,
   endOfMonth,
   eachDayOfInterval,
-  isSameMonth,
-  getDate
+  format
 } from 'date-fns';
+import MonthGrid from './MonthGrid.vue';
 
-const props = defineProps({
-  shifts: {
-    type: Object,
-    default: () => ({})
-  },
-  accentColor: {
-    type: String,
-    default: '#4A90E2'
-  }
-});
+interface Shift {
+  id: number;
+  startTime: string;
+  endTime: string;
+}
+
+interface ShiftMap {
+  [key: string]: Shift[];
+}
+
+const props = defineProps<{
+  shifts: ShiftMap;
+  accentColor: string;
+}>();
 
 const currentDate = ref(new Date());
 
@@ -83,7 +72,7 @@ const months = computed(() => {
     const emptyDaysBefore = Array(firstDayOfWeek).fill(null).map((_, index) => ({
       date: new Date(monthStart).setDate(-index),
       inMonth: false,
-      dayOfMonth: '',
+      dayOfMonth: 0,
       shifts: []
     })).reverse();
 
@@ -92,7 +81,7 @@ const months = computed(() => {
     const emptyDaysAfter = Array(6 - lastDayOfWeek).fill(null).map((_, index) => ({
       date: new Date(monthEnd).setDate(monthEnd.getDate() + index + 1),
       inMonth: false,
-      dayOfMonth: '',
+      dayOfMonth: 0,
       shifts: []
     }));
 
@@ -101,7 +90,7 @@ const months = computed(() => {
       ...daysInMonth.map(date => ({
         date: date.getTime(),
         inMonth: true,
-        dayOfMonth: getDate(date),
+        dayOfMonth: date.getDate(),
         shifts: props.shifts[format(date, 'yyyy-MM-dd')] || []
       })),
       ...emptyDaysAfter
@@ -109,7 +98,6 @@ const months = computed(() => {
 
     return {
       date: monthDate.getTime(),
-      name: format(monthDate, 'MMM'),
       days
     };
   });
@@ -154,41 +142,6 @@ const previousYear = () => {
 
     @media (min-width: $breakpoint-lg) {
       grid-template-columns: repeat(4, 1fr);
-    }
-  }
-
-  &__month {
-    &-title {
-      font-size: $font-size-sm;
-      font-weight: 500;
-      margin-bottom: $spacing-sm;
-      color: rgba($text, 0.8);
-    }
-
-    &-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 2px;
-    }
-  }
-
-  &__day {
-    aspect-ratio: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.75rem;
-    border-radius: 2px;
-    background-color: $background;
-    color: $text;
-    transition: background-color $transition-speed ease;
-
-    &.is-empty {
-      background-color: transparent;
-    }
-
-    &.has-shifts {
-      font-weight: 500;
     }
   }
 }

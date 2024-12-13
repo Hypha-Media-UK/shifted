@@ -19,16 +19,16 @@
         :accent-color="accentColor"
         :clipboard-shift="clipboardShift"
         :is-expanded="expandedDate === date.toISOString()"
-        @expand="handleExpand(date)"
         @update-shifts="(shifts) => updateShiftsForDate(date, shifts)"
         @copy-shift="setClipboardShift"
         @clear-clipboard="clearClipboardShift"
+        @expand="handleExpand(date)"
       />
     </div>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue';
 import { 
   startOfMonth, 
@@ -40,24 +40,34 @@ import {
 } from 'date-fns';
 import DayRow from './DayRow.vue';
 
-const props = defineProps({
-  accentColor: {
-    type: String,
-    default: '#4A90E2'
-  }
-});
+interface ShiftTime {
+  startTime: string;
+  endTime: string;
+}
 
-const emit = defineEmits(['update-shifts']);
+interface Shift extends ShiftTime {
+  id: number;
+}
+
+interface ShiftMap {
+  [key: string]: Shift[];
+}
+
+const props = defineProps<{
+  accentColor: string;
+}>();
+
+const emit = defineEmits<{
+  (e: 'update-shifts', shifts: ShiftMap): void;
+}>();
 
 const currentMonth = ref(new Date());
-const clipboardShift = ref(null);
-const shifts = ref({});  // Format: { 'YYYY-MM-DD': [shifts] }
-const expandedDate = ref(null);
+const clipboardShift = ref<ShiftTime | null>(null);
+const shifts = ref<ShiftMap>({});
+const expandedDate = ref<string | null>(null);
 
 // Computed properties
-const formattedMonth = computed(() => {
-  return format(currentMonth.value, 'MMMM yyyy');
-});
+const formattedMonth = computed(() => format(currentMonth.value, 'MMMM yyyy'));
 
 const daysInMonth = computed(() => {
   const start = startOfMonth(currentMonth.value);
@@ -66,17 +76,12 @@ const daysInMonth = computed(() => {
 });
 
 // Methods
-const handleExpand = (date) => {
-  const dateString = date.toISOString();
-  expandedDate.value = expandedDate.value === dateString ? null : dateString;
-};
-
-const getShiftsForDate = (date) => {
+const getShiftsForDate = (date: Date): Shift[] => {
   const dateKey = format(date, 'yyyy-MM-dd');
   return shifts.value[dateKey] || [];
 };
 
-const updateShiftsForDate = (date, newShifts) => {
+const updateShiftsForDate = (date: Date, newShifts: Shift[]) => {
   const dateKey = format(date, 'yyyy-MM-dd');
   shifts.value = {
     ...shifts.value,
@@ -85,12 +90,17 @@ const updateShiftsForDate = (date, newShifts) => {
   emit('update-shifts', shifts.value);
 };
 
-const setClipboardShift = (shift) => {
+const setClipboardShift = (shift: ShiftTime) => {
   clipboardShift.value = shift;
 };
 
 const clearClipboardShift = () => {
   clipboardShift.value = null;
+};
+
+const handleExpand = (date: Date) => {
+  const dateString = date.toISOString();
+  expandedDate.value = expandedDate.value === dateString ? null : dateString;
 };
 
 const nextMonth = () => {
