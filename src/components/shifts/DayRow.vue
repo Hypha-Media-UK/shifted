@@ -167,9 +167,23 @@ const sortedShifts = computed(() => {
 });
 
 const isValidShift = computed(() => {
-  return currentShift.value.startTime && 
-         currentShift.value.endTime && 
-         currentShift.value.startTime < currentShift.value.endTime;
+  if (!currentShift.value.startTime || !currentShift.value.endTime) return false;
+  
+  // Convert times to minutes since midnight for comparison
+  const [startHours, startMinutes] = currentShift.value.startTime.split(':').map(Number);
+  const [endHours, endMinutes] = currentShift.value.endTime.split(':').map(Number);
+  
+  const startTotalMinutes = startHours * 60 + startMinutes;
+  const endTotalMinutes = endHours * 60 + endMinutes;
+  
+  // If end time is less than start time, it means the shift spans across midnight
+  // In this case, we add 24 hours (1440 minutes) to the end time for comparison
+  const adjustedEndMinutes = endTotalMinutes < startTotalMinutes 
+    ? endTotalMinutes + (24 * 60) 
+    : endTotalMinutes;
+  
+  // Ensure the shift is not longer than 24 hours
+  return adjustedEndMinutes - startTotalMinutes <= 24 * 60;
 });
 
 const hasClipboardShift = computed(() => {
