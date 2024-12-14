@@ -45,7 +45,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import MonthView from './components/shifts/MonthView.vue';
 import YearView from './components/shifts/YearView.vue';
 
@@ -62,11 +62,58 @@ interface ShiftMap {
   [key: string]: Shift[];
 }
 
+// Constants
+const STORAGE_KEY = 'shift-tracker-data';
+const accentColor = '#4A90E2';
+
+// State
 const currentView = ref<'month' | 'year'>('month');
 const shifts = ref<ShiftMap>({});
 const selectedDate = ref<Date | undefined>();
-const accentColor = '#4A90E2';
 
+// Load data from localStorage
+const loadData = () => {
+  try {
+    const savedData = localStorage.getItem(STORAGE_KEY);
+    if (savedData) {
+      const parsedData = JSON.parse(savedData);
+      shifts.value = parsedData.shifts || {};
+      
+      // Restore selected date if it exists
+      if (parsedData.selectedDate) {
+        selectedDate.value = new Date(parsedData.selectedDate);
+      }
+      
+      // Restore current view
+      if (parsedData.currentView) {
+        currentView.value = parsedData.currentView;
+      }
+    }
+  } catch (error) {
+    console.error('Error loading data from localStorage:', error);
+  }
+};
+
+// Save data to localStorage
+const saveData = () => {
+  try {
+    const dataToSave = {
+      shifts: shifts.value,
+      selectedDate: selectedDate.value?.toISOString(),
+      currentView: currentView.value
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+  } catch (error) {
+    console.error('Error saving data to localStorage:', error);
+  }
+};
+
+// Watch for changes in state and save to localStorage
+watch([shifts, selectedDate, currentView], () => {
+  saveData();
+}, { deep: true });
+
+// Methods
 const updateShifts = (newShifts: ShiftMap) => {
   shifts.value = newShifts;
 };
@@ -80,6 +127,11 @@ const switchToMonth = () => {
   selectedDate.value = undefined;
   currentView.value = 'month';
 };
+
+// Load data when component is mounted
+onMounted(() => {
+  loadData();
+});
 </script>
 
 <style lang="scss">
