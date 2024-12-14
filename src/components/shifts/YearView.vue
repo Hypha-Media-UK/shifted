@@ -17,6 +17,7 @@
         :month-date="new Date(month.date)"
         :days="month.days"
         :accent-color="accentColor"
+        @day-click="handleDayClick"
       />
     </div>
   </div>
@@ -38,10 +39,13 @@ import {
 } from 'date-fns';
 import MonthGrid from './MonthGrid.vue';
 
-interface Shift {
-  id: number;
+interface ShiftTime {
   startTime: string;
   endTime: string;
+}
+
+interface Shift extends ShiftTime {
+  id: number;
 }
 
 interface ShiftMap {
@@ -51,6 +55,10 @@ interface ShiftMap {
 const props = defineProps<{
   shifts: ShiftMap;
   accentColor: string;
+}>();
+
+const emit = defineEmits<{
+  (e: 'select-date', date: Date): void;
 }>();
 
 const currentDate = ref(new Date());
@@ -109,6 +117,10 @@ const nextYear = () => {
 
 const previousYear = () => {
   currentDate.value = subYears(currentDate.value, 1);
+};
+
+const handleDayClick = (date: Date) => {
+  emit('select-date', date);
 };
 </script>
 

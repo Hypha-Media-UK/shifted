@@ -19,6 +19,7 @@
         :accent-color="accentColor"
         :clipboard-shift="clipboardShift"
         :is-expanded="expandedDate === date.toISOString()"
+        :is-selected="!!selectedDate && isSameDay(date, selectedDate)"
         @update-shifts="(shifts) => updateShiftsForDate(date, shifts)"
         @copy-shift="setClipboardShift"
         @clear-clipboard="clearClipboardShift"
@@ -29,14 +30,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { 
   startOfMonth, 
   endOfMonth, 
   eachDayOfInterval, 
   format,
   addMonths,
-  subMonths
+  subMonths,
+  isSameMonth,
+  isSameDay,
+  startOfDay
 } from 'date-fns';
 import DayRow from './DayRow.vue';
 
@@ -55,16 +59,35 @@ interface ShiftMap {
 
 const props = defineProps<{
   accentColor: string;
+  selectedDate?: Date;
+  initialShifts?: ShiftMap;
 }>();
 
 const emit = defineEmits<{
   (e: 'update-shifts', shifts: ShiftMap): void;
 }>();
 
-const currentMonth = ref(new Date());
+const currentMonth = ref(props.selectedDate || new Date());
 const clipboardShift = ref<ShiftTime | null>(null);
-const shifts = ref<ShiftMap>({});
+const shifts = ref<ShiftMap>(props.initialShifts || {});
 const expandedDate = ref<string | null>(null);
+
+// Watch for selectedDate changes
+watch(() => props.selectedDate, (newDate) => {
+  if (newDate) {
+    // Update current month if selected date is in a different month
+    if (!isSameMonth(currentMonth.value, newDate)) {
+      currentMonth.value = newDate;
+    }
+  }
+}, { immediate: true });
+
+// Watch for initialShifts changes
+watch(() => props.initialShifts, (newShifts) => {
+  if (newShifts) {
+    shifts.value = newShifts;
+  }
+}, { immediate: true });
 
 // Computed properties
 const formattedMonth = computed(() => format(currentMonth.value, 'MMMM yyyy'));
@@ -83,11 +106,12 @@ const getShiftsForDate = (date: Date): Shift[] => {
 
 const updateShiftsForDate = (date: Date, newShifts: Shift[]) => {
   const dateKey = format(date, 'yyyy-MM-dd');
-  shifts.value = {
+  const updatedShifts = {
     ...shifts.value,
     [dateKey]: newShifts
   };
-  emit('update-shifts', shifts.value);
+  shifts.value = updatedShifts;
+  emit('update-shifts', updatedShifts);
 };
 
 const setClipboardShift = (shift: ShiftTime) => {
@@ -99,7 +123,7 @@ const clearClipboardShift = () => {
 };
 
 const handleExpand = (date: Date) => {
-  const dateString = date.toISOString();
+  const dateString = startOfDay(date).toISOString();
   expandedDate.value = expandedDate.value === dateString ? null : dateString;
 };
 

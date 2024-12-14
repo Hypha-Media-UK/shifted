@@ -7,7 +7,7 @@
           <button 
             class="btn" 
             :class="{ 'btn-primary': currentView === 'month', 'btn-secondary': currentView === 'year' }"
-            @click="currentView = 'month'"
+            @click="switchToMonth"
           >
             Month View
           </button>
@@ -28,12 +28,15 @@
           <MonthView
             v-if="currentView === 'month'"
             :accent-color="accentColor"
+            :selected-date="selectedDate"
+            :initial-shifts="shifts"
             @update-shifts="updateShifts"
           />
           <YearView
             v-else
             :shifts="shifts"
             :accent-color="accentColor"
+            @select-date="handleDateSelect"
           />
         </Transition>
       </div>
@@ -41,17 +44,41 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue';
 import MonthView from './components/shifts/MonthView.vue';
 import YearView from './components/shifts/YearView.vue';
 
-const currentView = ref('month');
-const shifts = ref({});
+interface ShiftTime {
+  startTime: string;
+  endTime: string;
+}
+
+interface Shift extends ShiftTime {
+  id: number;
+}
+
+interface ShiftMap {
+  [key: string]: Shift[];
+}
+
+const currentView = ref<'month' | 'year'>('month');
+const shifts = ref<ShiftMap>({});
+const selectedDate = ref<Date | undefined>();
 const accentColor = '#4A90E2';
 
-const updateShifts = (newShifts) => {
+const updateShifts = (newShifts: ShiftMap) => {
   shifts.value = newShifts;
+};
+
+const handleDateSelect = (date: Date) => {
+  selectedDate.value = date;
+  currentView.value = 'month';
+};
+
+const switchToMonth = () => {
+  selectedDate.value = undefined;
+  currentView.value = 'month';
 };
 </script>
 
@@ -92,5 +119,21 @@ const updateShifts = (newShifts) => {
 .view-toggle {
   display: flex;
   gap: $spacing-sm;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity $transition-speed ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 $spacing-md;
 }
 </style>

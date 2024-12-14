@@ -1,5 +1,11 @@
 <template>
-  <div class="day-row" :class="{ 'is-expanded': isExpanded }">
+  <div 
+    class="day-row" 
+    :class="{ 
+      'is-expanded': isExpanded,
+      'is-selected': isSelected
+    }"
+  >
     <div class="day-row__header">
       <div class="day-row__date">
         <span class="day-row__weekday">{{ formattedWeekday }}</span>
@@ -41,9 +47,6 @@
           </button>
         </div>
       </div>
-      <div class="day-row__expand" v-if="isExpanded">
-        <span class="icon" :class="{ 'is-rotated': isExpanded }">▼</span>
-      </div>
     </div>
 
     <Transition name="slide-down">
@@ -66,10 +69,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed } from 'vue';
 import { format } from 'date-fns';
-import ShiftPill from './ShiftPill.vue';
 import ShiftEditor from './ShiftEditor.vue';
+import ShiftPill from './ShiftPill.vue';
 
 interface ShiftTime {
   startTime: string;
@@ -80,30 +83,21 @@ interface Shift extends ShiftTime {
   id: number;
 }
 
-const props = defineProps({
-  date: {
-    type: Date,
-    required: true
-  },
-  shifts: {
-    type: Array as () => Shift[],
-    default: () => []
-  },
-  accentColor: {
-    type: String,
-    default: '#4A90E2'
-  },
-  clipboardShift: {
-    type: Object as () => ShiftTime | null,
-    default: null
-  },
-  isExpanded: {
-    type: Boolean,
-    default: false
-  }
-});
+const props = defineProps<{
+  date: Date;
+  shifts: Shift[];
+  accentColor: string;
+  clipboardShift: ShiftTime | null;
+  isExpanded: boolean;
+  isSelected: boolean;
+}>();
 
-const emit = defineEmits(['update-shifts', 'copy-shift', 'clear-clipboard', 'expand']);
+const emit = defineEmits<{
+  (e: 'update-shifts', shifts: Shift[]): void;
+  (e: 'copy-shift', shift: ShiftTime): void;
+  (e: 'clear-clipboard'): void;
+  (e: 'expand'): void;
+}>();
 
 const isEditing = ref(false);
 const editingShiftId = ref<number | null>(null);
@@ -112,10 +106,11 @@ const currentShift = ref<ShiftTime>({
   endTime: ''
 });
 
-watch(() => props.isExpanded, (newValue) => {
-  if (!newValue) {
-    resetForm();
-  }
+const formattedWeekday = computed(() => format(props.date, 'EEE'));
+const formattedDay = computed(() => format(props.date, 'd'));
+
+const sortedShifts = computed(() => {
+  return [...props.shifts].sort((a, b) => a.startTime.localeCompare(b.startTime));
 });
 
 const timeToMinutes = (time: string): number => {
@@ -135,13 +130,6 @@ const doShiftsOverlap = (shift1: ShiftTime, shift2: ShiftTime): boolean => {
   return (start1 < adjustedEnd2 && adjustedEnd1 > start2) ||
          (start2 < adjustedEnd1 && adjustedEnd2 > start1);
 };
-
-const formattedWeekday = computed(() => format(props.date, 'EEE'));
-const formattedDay = computed(() => format(props.date, 'd'));
-
-const sortedShifts = computed(() => {
-  return [...props.shifts].sort((a, b) => a.startTime.localeCompare(b.startTime));
-});
 
 const hasOverlap = computed(() => {
   if (!currentShift.value.startTime || !currentShift.value.endTime) return false;
@@ -287,6 +275,13 @@ const resetForm = () => {
   margin-bottom: $spacing-sm;
   background: white;
   overflow: hidden;
+  transition: all $transition-speed ease;
+
+  &.is-selected {
+    border-color: $primary;
+    background: rgba($primary, 0.02);
+    transform: translateX($spacing-xs);
+  }
 
   &__header {
     display: flex;

@@ -8,9 +8,11 @@
         class="month-grid__day"
         :class="{
           'is-empty': !day.inMonth,
-          'has-shifts': day.shifts.length > 0
+          'has-shifts': day.shifts.length > 0,
+          'is-clickable': day.inMonth && day.shifts.length > 0
         }"
         :style="day.shifts.length ? { backgroundColor: accentColor + '33' } : {}"
+        @click="handleDayClick(day)"
       >
         <span v-if="day.inMonth">{{ day.dayOfMonth }}</span>
       </div>
@@ -35,7 +37,19 @@ const props = defineProps<{
   accentColor: string;
 }>();
 
+const emit = defineEmits<{
+  (e: 'day-click', date: Date): void;
+}>();
+
 const monthName = computed(() => format(props.monthDate, 'MMM'));
+
+const handleDayClick = (day: Day) => {
+  if (day.inMonth && day.shifts.length > 0) {
+    // Convert timestamp to Date object
+    const date = new Date(day.date);
+    emit('day-click', date);
+  }
+};
 </script>
 
 <style lang="scss" scoped>
@@ -64,7 +78,7 @@ const monthName = computed(() => format(props.monthDate, 'MMM'));
     border-radius: 2px;
     background-color: $background;
     color: $text;
-    transition: background-color $transition-speed ease;
+    transition: all $transition-speed ease;
 
     &.is-empty {
       background-color: transparent;
@@ -72,6 +86,15 @@ const monthName = computed(() => format(props.monthDate, 'MMM'));
 
     &.has-shifts {
       font-weight: 500;
+    }
+
+    &.is-clickable {
+      cursor: pointer;
+
+      &:hover {
+        transform: scale(1.1);
+        box-shadow: $box-shadow;
+      }
     }
   }
 }
