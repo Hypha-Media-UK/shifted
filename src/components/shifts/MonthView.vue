@@ -20,6 +20,11 @@
         :clipboard-shift="clipboardShift"
         :is-expanded="expandedDate === date.toISOString()"
         :is-selected="!!selectedDate && isSameDay(date, selectedDate)"
+        :ref="(el) => {
+          if (!!selectedDate && isSameDay(date, selectedDate)) {
+            selectedDayRef = el;
+          }
+        }"
         @update-shifts="(shifts) => updateShiftsForDate(date, shifts)"
         @copy-shift="setClipboardShift"
         @clear-clipboard="clearClipboardShift"
@@ -30,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, nextTick } from 'vue';
 import { 
   startOfMonth, 
   endOfMonth, 
@@ -71,13 +76,25 @@ const currentMonth = ref(props.selectedDate || new Date());
 const clipboardShift = ref<ShiftTime | null>(null);
 const shifts = ref<ShiftMap>(props.initialShifts || {});
 const expandedDate = ref<string | null>(null);
+const selectedDayRef = ref<any>(null);
 
 // Watch for selectedDate changes
-watch(() => props.selectedDate, (newDate) => {
+watch(() => props.selectedDate, async (newDate) => {
   if (newDate) {
     // Update current month if selected date is in a different month
     if (!isSameMonth(currentMonth.value, newDate)) {
       currentMonth.value = newDate;
+    }
+    
+    // Wait for the DOM to update
+    await nextTick();
+    
+    // Scroll the selected day into view with smooth behavior
+    if (selectedDayRef.value?.$el) {
+      selectedDayRef.value.$el.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
     }
   }
 }, { immediate: true });
@@ -151,6 +168,9 @@ const previousMonth = () => {
     background: white;
     border-radius: $border-radius;
     box-shadow: $box-shadow;
+    position: sticky;
+    top: 0;
+    z-index: 1;
   }
 
   &__title {
@@ -164,6 +184,8 @@ const previousMonth = () => {
     display: flex;
     flex-direction: column;
     gap: $spacing-sm;
+    scroll-behavior: smooth;
+    padding-bottom: $spacing-xl;
   }
 }
 </style>
