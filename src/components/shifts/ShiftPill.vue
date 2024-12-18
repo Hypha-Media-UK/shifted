@@ -57,8 +57,10 @@ const formatShiftTime = (time: string) => {
   gap: $spacing-xs;
   border: 1px solid transparent;
   transition: all $transition-speed ease;
-  max-width: 100%;
   overflow: hidden;
+  min-width: 0;
+  flex: 1;
+  max-width: 150px;
 
   &:hover {
     border-color: rgba($primary, 0.2);
@@ -76,15 +78,17 @@ const formatShiftTime = (time: string) => {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    min-width: 0;
+    flex: 1;
 
     .material-icons-round {
       font-size: 1rem;
       color: $text-light;
+      flex-shrink: 0;
     }
 
     &:hover {
       color: $primary;
-      transform: translateY(-1px);
 
       .material-icons-round {
         color: $primary;
@@ -101,7 +105,7 @@ const formatShiftTime = (time: string) => {
   &__delete {
     width: 20px;
     height: 20px;
-    min-width: 20px; // Prevent shrinking
+    min-width: 20px;
     border-radius: $border-radius-sm;
     border: none;
     background: transparent;
@@ -112,7 +116,7 @@ const formatShiftTime = (time: string) => {
     cursor: pointer;
     padding: 0;
     transition: all $transition-speed ease;
-    margin-left: auto;
+    flex-shrink: 0;
 
     .material-icons-round {
       font-size: 1rem;
@@ -121,19 +125,13 @@ const formatShiftTime = (time: string) => {
     &:hover {
       background: $danger;
       color: white;
-      transform: translateY(-1px);
-    }
-
-    &:active {
-      transform: translateY(0);
     }
   }
 
   @media (max-width: $breakpoint-sm) {
     padding: $spacing-xs;
     font-size: $font-size-sm;
-    flex: 1 1 auto;
-    justify-content: space-between;
+    max-width: 100px;
   }
 }
 </style>

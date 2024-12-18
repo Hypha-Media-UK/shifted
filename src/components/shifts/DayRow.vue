@@ -314,6 +314,7 @@ const resetForm = () => {
     display: flex;
     flex-direction: column;
     min-width: 60px;
+    flex-shrink: 0;
 
     @media (max-width: $breakpoint-sm) {
       min-width: 45px;
@@ -343,10 +344,10 @@ const resetForm = () => {
     gap: $spacing-sm;
     align-items: center;
     min-width: 0;
+    overflow: hidden;
 
     @media (max-width: $breakpoint-sm) {
       gap: $spacing-xs;
-      flex-wrap: wrap;
     }
   }
 
@@ -354,6 +355,7 @@ const resetForm = () => {
     display: flex;
     gap: $spacing-xs;
     margin-left: auto;
+    flex-shrink: 0;
   }
 
   &__action-btn {
@@ -425,6 +427,7 @@ const resetForm = () => {
     align-items: center;
     justify-content: center;
     transition: color $transition-speed ease;
+    flex-shrink: 0;
 
     &:hover {
       color: $text;
