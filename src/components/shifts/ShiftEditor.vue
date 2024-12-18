@@ -142,7 +142,7 @@ const isValid = computed(() => {
     padding: $spacing-sm $spacing-md;
     background-color: rgba($danger, 0.1);
     color: $danger;
-    border-radius: $border-radius-lg;
+    border-radius: $border-radius;
     font-size: $font-size-sm;
     display: flex;
     align-items: center;
@@ -194,7 +194,7 @@ const isValid = computed(() => {
   width: 100%;
   padding: $spacing-sm $spacing-md;
   border: 2px solid $border;
-  border-radius: $border-radius;
+  border-radius: $border-radius-sm;
   font-size: $font-size-base;
   font-family: $font-family-base;
   transition: all $transition-speed ease;

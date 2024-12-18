@@ -92,14 +92,13 @@ const handleDayClick = (day: Day) => {
 
 .month-grid {
   background: white;
-  border-radius: $border-radius-lg;
+  border-radius: $border-radius;
   padding: $spacing-lg;
   box-shadow: $shadow-sm;
-  transition: all $transition-speed ease;
+  transition: box-shadow $transition-speed ease;
 
   &:hover {
     box-shadow: $shadow-md;
-    transform: translateY(-2px);
   }
 
   &__title {
@@ -125,7 +124,7 @@ const handleDayClick = (day: Day) => {
     border-radius: $border-radius-sm;
     background-color: $background;
     color: $text;
-    transition: all $transition-speed $transition-bounce;
+    transition: all $transition-speed ease;
     border: 1px solid transparent;
 
     &.is-empty {
@@ -141,9 +140,7 @@ const handleDayClick = (day: Day) => {
       cursor: pointer;
 
       &:hover {
-        transform: scale(1.1);
-        box-shadow: $shadow-md;
-        z-index: 1;
+        background-color: rgba($primary, 0.05);
       }
     }
 

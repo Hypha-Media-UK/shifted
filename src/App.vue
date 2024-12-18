@@ -221,7 +221,7 @@ onMounted(() => {
     display: flex;
     background: rgba(white, 0.1);
     padding: $spacing-xs;
-    border-radius: $border-radius-lg;
+    border-radius: $border-radius;
     gap: $spacing-xs;
     width: 100%;
   }
@@ -230,13 +230,13 @@ onMounted(() => {
     flex: 1;
     padding: $spacing-sm $spacing-lg;
     border: none;
-    border-radius: $border-radius;
+    border-radius: $border-radius-sm;
     background: transparent;
     color: rgba(white, 0.8);
     font-size: $font-size-base;
     font-weight: $font-weight-medium;
     cursor: pointer;
-    transition: all $transition-speed $transition-bounce;
+    transition: all $transition-speed ease;
     white-space: nowrap;
     min-width: 0;
 

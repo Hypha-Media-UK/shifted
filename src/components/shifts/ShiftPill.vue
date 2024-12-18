@@ -50,7 +50,7 @@ const formatShiftTime = (time: string) => {
 
 .shift-pill {
   padding: $spacing-xs $spacing-sm;
-  border-radius: $border-radius-lg;
+  border-radius: $border-radius;
   font-size: $font-size-sm;
   display: inline-flex;
   align-items: center;
@@ -102,7 +102,7 @@ const formatShiftTime = (time: string) => {
     width: 20px;
     height: 20px;
     min-width: 20px; // Prevent shrinking
-    border-radius: $border-radius;
+    border-radius: $border-radius-sm;
     border: none;
     background: transparent;
     color: $text-light;
