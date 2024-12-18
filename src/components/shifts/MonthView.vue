@@ -2,11 +2,13 @@
   <div class="month-view">
     <div class="month-view__header">
       <button class="btn btn-secondary" @click="previousMonth">
-        ←
+        <span class="material-icons-round">chevron_left</span>
+        <span class="hide-sm">Previous</span>
       </button>
       <h2 class="month-view__title">{{ formattedMonth }}</h2>
       <button class="btn btn-secondary" @click="nextMonth">
-        →
+        <span class="hide-sm">Next</span>
+        <span class="material-icons-round">chevron_right</span>
       </button>
     </div>
 
@@ -156,7 +158,7 @@ const previousMonth = () => {
 </script>
 
 <style lang="scss" scoped>
-@import '@/styles/abstracts/variables';
+@import '../../styles/abstracts/variables';
 
 .month-view {
   &__header {
@@ -164,28 +166,58 @@ const previousMonth = () => {
     align-items: center;
     justify-content: space-between;
     margin-bottom: $spacing-lg;
-    padding: $spacing-md;
+    padding: $spacing-md $spacing-lg;
     background: white;
-    border-radius: $border-radius;
-    box-shadow: $box-shadow;
+    border-radius: $border-radius-lg;
+    box-shadow: $shadow-md;
     position: sticky;
-    top: 0;
-    z-index: 1;
+    top: calc(73px + $spacing-xl); // Account for main header height
+    z-index: 10;
+    transition: box-shadow $transition-speed ease;
+
+    @media (max-width: $breakpoint-sm) {
+      top: calc(116px + $spacing-lg); // Adjusted for mobile header height
+      padding: $spacing-sm;
+      margin-bottom: $spacing-md;
+      
+      .btn {
+        padding: $spacing-sm;
+        
+        .material-icons-round {
+          margin: 0;
+        }
+      }
+    }
+
+    &:hover {
+      box-shadow: $shadow-lg;
+    }
   }
 
   &__title {
-    font-size: $font-size-lg;
-    font-weight: 600;
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
     margin: 0;
     color: $text;
+    text-align: center;
+    min-width: 200px;
+
+    @media (max-width: $breakpoint-sm) {
+      font-size: $font-size-lg;
+      min-width: auto;
+    }
   }
 
   &__days {
     display: flex;
     flex-direction: column;
     gap: $spacing-sm;
-    scroll-behavior: smooth;
     padding-bottom: $spacing-xl;
+
+    @media (max-width: $breakpoint-sm) {
+      gap: $spacing-xs;
+      padding-bottom: $spacing-lg;
+    }
   }
 }
 </style>

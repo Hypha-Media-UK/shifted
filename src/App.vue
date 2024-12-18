@@ -2,29 +2,36 @@
   <div class="app">
     <header class="app__header">
       <div class="container">
-        <h1>Shift Tracker</h1>
+        <h1>
+          <span class="material-icons-round">calendar_today</span>
+          Shift Tracker
+        </h1>
         <div class="view-toggle">
-          <button 
-            class="btn" 
-            :class="{ 'btn-primary': currentView === 'month', 'btn-secondary': currentView === 'year' }"
-            @click="switchToMonth"
-          >
-            Month View
-          </button>
-          <button 
-            class="btn" 
-            :class="{ 'btn-primary': currentView === 'year', 'btn-secondary': currentView === 'month' }"
-            @click="currentView = 'year'"
-          >
-            Year View
-          </button>
+          <div class="view-toggle__container">
+            <button 
+              type="button"
+              class="view-toggle__btn"
+              :class="{ active: currentView === 'month' }"
+              @click="switchToMonth"
+            >
+              Month View
+            </button>
+            <button 
+              type="button"
+              class="view-toggle__btn"
+              :class="{ active: currentView === 'year' }"
+              @click="currentView = 'year'"
+            >
+              Year View
+            </button>
+          </div>
         </div>
       </div>
     </header>
 
     <main class="app__main">
       <div class="container">
-        <Transition name="fade" mode="out-in">
+        <Transition name="scale" mode="out-in">
           <MonthView
             v-if="currentView === 'month'"
             :accent-color="accentColor"
@@ -64,7 +71,7 @@ interface ShiftMap {
 
 // Constants
 const STORAGE_KEY = 'shift-tracker-data';
-const accentColor = '#4A90E2';
+const accentColor = '#2563eb';
 
 // State
 const currentView = ref<'month' | 'year'>('month');
@@ -79,12 +86,10 @@ const loadData = () => {
       const parsedData = JSON.parse(savedData);
       shifts.value = parsedData.shifts || {};
       
-      // Restore selected date if it exists
       if (parsedData.selectedDate) {
         selectedDate.value = new Date(parsedData.selectedDate);
       }
       
-      // Restore current view
       if (parsedData.currentView) {
         currentView.value = parsedData.currentView;
       }
@@ -143,49 +148,132 @@ onMounted(() => {
   flex-direction: column;
 
   &__header {
-    background: white;
-    box-shadow: $box-shadow;
-    padding: $spacing-md 0;
+    background: $gradient-primary;
+    box-shadow: $shadow-md;
+    padding: $spacing-lg 0;
     margin-bottom: $spacing-xl;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+
+    @media (max-width: $breakpoint-sm) {
+      padding: $spacing-md 0;
+      margin-bottom: $spacing-lg;
+    }
 
     .container {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: $spacing-md;
+
+      @media (max-width: $breakpoint-sm) {
+        flex-direction: column;
+        align-items: stretch;
+      }
     }
 
     h1 {
-      font-size: 1.5rem;
-      font-weight: 600;
+      font-size: $font-size-xl;
+      font-weight: $font-weight-bold;
       margin: 0;
-      color: $text;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: $spacing-sm;
+
+      .material-icons-round {
+        font-size: 1.75rem;
+      }
+
+      @media (max-width: $breakpoint-sm) {
+        justify-content: center;
+        margin-bottom: $spacing-sm;
+      }
     }
   }
 
   &__main {
     flex: 1;
     padding: $spacing-md 0 $spacing-xl;
+
+    @media (max-width: $breakpoint-sm) {
+      padding: $spacing-sm 0 $spacing-lg;
+    }
+
+    .container {
+      @media (max-width: $breakpoint-sm) {
+        padding: 0 $spacing-sm;
+      }
+    }
   }
 }
 
 .view-toggle {
-  display: flex;
-  gap: $spacing-sm;
+  position: relative;
+  width: 300px;
+
+  @media (max-width: $breakpoint-sm) {
+    width: 100%;
+  }
+
+  &__container {
+    display: flex;
+    background: rgba(white, 0.1);
+    padding: $spacing-xs;
+    border-radius: $border-radius-lg;
+    gap: $spacing-xs;
+    width: 100%;
+  }
+
+  &__btn {
+    flex: 1;
+    padding: $spacing-sm $spacing-lg;
+    border: none;
+    border-radius: $border-radius;
+    background: transparent;
+    color: rgba(white, 0.8);
+    font-size: $font-size-base;
+    font-weight: $font-weight-medium;
+    cursor: pointer;
+    transition: all $transition-speed $transition-bounce;
+    white-space: nowrap;
+    min-width: 0;
+
+    @media (max-width: $breakpoint-sm) {
+      padding: $spacing-sm;
+    }
+
+    &:hover {
+      color: white;
+      background: rgba(white, 0.1);
+    }
+
+    &.active {
+      background: white;
+      color: $primary;
+      box-shadow: $shadow-sm;
+
+      &:hover {
+        transform: translateY(-1px);
+        box-shadow: $shadow-md;
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+  }
 }
 
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity $transition-speed ease;
+.scale-enter-active,
+.scale-leave-active {
+  transition: all $transition-speed $transition-bounce;
 }
 
-.fade-enter-from,
-.fade-leave-to {
+.scale-enter-from,
+.scale-leave-to {
   opacity: 0;
-}
-
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 $spacing-md;
+  transform: scale(0.95);
 }
 </style>

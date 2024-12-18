@@ -6,7 +6,7 @@
       'is-selected': isSelected
     }"
   >
-    <div class="day-row__header">
+    <div class="day-row__header" @click="$emit('expand')">
       <div class="day-row__date">
         <span class="day-row__weekday">{{ formattedWeekday }}</span>
         <span class="day-row__day">{{ formattedDay }}</span>
@@ -23,6 +23,7 @@
           />
         </template>
         <div v-else class="day-row__empty">
+          <span class="material-icons-round">schedule</span>
           No shifts
         </div>
         <div class="day-row__actions">
@@ -33,7 +34,8 @@
             :disabled="shifts.length >= 3"
             :title="shifts.length >= 3 ? 'Maximum shifts reached' : 'Add new shift'"
           >
-            New
+            <span class="material-icons-round">add</span>
+            <span class="hide-sm">New</span>
           </button>
           <button 
             v-if="clipboardShift"
@@ -43,13 +45,22 @@
             :disabled="shifts.length >= 3 || hasClipboardShift || wouldClipboardShiftOverlap"
             :title="getAddButtonTitle"
           >
-            Add
+            <span class="material-icons-round">content_paste</span>
+            <span class="hide-sm">Add</span>
           </button>
         </div>
       </div>
+      <button class="day-row__expand" @click.stop="$emit('expand')">
+        <span 
+          class="material-icons-round"
+          :class="{ 'is-rotated': isExpanded }"
+        >
+          expand_more
+        </span>
+      </button>
     </div>
 
-    <Transition name="slide-down">
+    <Transition name="slide-up">
       <div v-if="isExpanded" class="day-row__content">
         <ShiftEditor
           :shift="currentShift"
@@ -267,12 +278,11 @@ const resetForm = () => {
 </script>
 
 <style lang="scss" scoped>
-@import '@/styles/abstracts/variables';
+@import '../../styles/abstracts/variables';
 
 .day-row {
   border: 1px solid $border;
-  border-radius: $border-radius;
-  margin-bottom: $spacing-sm;
+  border-radius: $border-radius-lg;
   background: white;
   overflow: hidden;
   transition: all $transition-speed ease;
@@ -280,38 +290,64 @@ const resetForm = () => {
   &.is-selected {
     border-color: $primary;
     background: rgba($primary, 0.02);
-    transform: translateX($spacing-xs);
   }
 
   &__header {
     display: flex;
     align-items: center;
-    padding: $spacing-md;
-    transition: background-color $transition-speed ease;
+    padding: $spacing-md $spacing-lg;
+    cursor: pointer;
+    gap: $spacing-md;
+    transition: background-color 0.15s ease;
+
+    @media (max-width: $breakpoint-sm) {
+      padding: $spacing-sm;
+      gap: $spacing-sm;
+    }
+
+    &:hover {
+      background-color: rgba($primary, 0.05);
+    }
   }
 
   &__date {
     display: flex;
     flex-direction: column;
     min-width: 60px;
+
+    @media (max-width: $breakpoint-sm) {
+      min-width: 45px;
+    }
   }
 
   &__weekday {
     font-size: $font-size-sm;
-    color: rgba($text, 0.6);
+    color: $text-light;
+    font-weight: $font-weight-medium;
   }
 
   &__day {
-    font-size: $font-size-lg;
-    font-weight: 500;
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
+    color: $text;
+    line-height: 1.2;
+
+    @media (max-width: $breakpoint-sm) {
+      font-size: $font-size-lg;
+    }
   }
 
   &__shifts {
     flex: 1;
     display: flex;
     gap: $spacing-sm;
-    margin: 0 $spacing-md;
     align-items: center;
+    min-width: 0;
+
+    @media (max-width: $breakpoint-sm) {
+      gap: $spacing-xs;
+      flex-wrap: wrap;
+    }
   }
 
   &__actions {
@@ -321,16 +357,24 @@ const resetForm = () => {
   }
 
   &__action-btn {
-    padding: $spacing-xs $spacing-sm;
+    padding: $spacing-xs $spacing-md;
     border-radius: $border-radius;
     border: none;
     font-size: $font-size-sm;
     cursor: pointer;
-    transition: all $transition-speed ease;
-    display: flex;
+    transition: background-color $transition-speed ease;
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
-    font-weight: 500;
+    gap: $spacing-xs;
+    font-weight: $font-weight-medium;
+
+    @media (max-width: $breakpoint-sm) {
+      padding: $spacing-xs;
+    }
+
+    .material-icons-round {
+      font-size: 1.2rem;
+    }
 
     &.is-disabled {
       opacity: 0.5;
@@ -345,8 +389,7 @@ const resetForm = () => {
     color: $primary;
 
     &:hover:not(.is-disabled) {
-      background: $primary;
-      color: white;
+      background: rgba($primary, 0.15);
     }
   }
 
@@ -355,20 +398,40 @@ const resetForm = () => {
     color: $secondary;
 
     &:hover:not(.is-disabled) {
-      background: $secondary;
-      color: white;
+      background: rgba($secondary, 0.15);
     }
   }
 
   &__empty {
-    color: rgba($text, 0.4);
+    color: $text-light;
     font-size: $font-size-sm;
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+
+    .material-icons-round {
+      font-size: 1.1rem;
+      opacity: 0.7;
+    }
   }
 
   &__expand {
-    .icon {
-      transition: transform $transition-speed ease;
-      display: inline-block;
+    background: transparent;
+    border: none;
+    padding: $spacing-xs;
+    cursor: pointer;
+    color: $text-light;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color $transition-speed ease;
+
+    &:hover {
+      color: $text;
+    }
+
+    .material-icons-round {
+      transition: transform $transition-speed $transition-bounce;
       
       &.is-rotated {
         transform: rotate(180deg);
@@ -377,9 +440,26 @@ const resetForm = () => {
   }
 
   &__content {
-    padding: $spacing-md;
+    padding: $spacing-lg;
     border-top: 1px solid $border;
     background-color: rgba($background, 0.5);
+
+    @media (max-width: $breakpoint-sm) {
+      padding: $spacing-md;
+    }
   }
+}
+
+// Transitions
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: all $transition-speed $transition-bounce;
+  max-height: 400px;
+}
+
+.slide-up-enter-from,
+.slide-leave-to {
+  max-height: 0;
+  opacity: 0;
 }
 </style>
