@@ -350,7 +350,7 @@ const resetForm = () => {
   }
 
   &__action-btn {
-    padding: $spacing-xs $spacing-sm;
+    padding: $spacing-xs $spacing-md;
     border-radius: $border-radius;
     border: none;
     font-size: $font-size-sm;
@@ -360,6 +360,10 @@ const resetForm = () => {
     align-items: center;
     gap: $spacing-xs;
     font-weight: $font-weight-medium;
+
+    @media (max-width: $breakpoint-sm) {
+      padding: $spacing-xs;
+    }
 
     .material-icons-round {
       font-size: 1.2rem;
@@ -374,7 +378,7 @@ const resetForm = () => {
   }
 
   &__new-btn {
-    background: rgba($success, 0.1);
+    background: rgba($success, 0.25);
     color: $success;
     width: 32px;
     height: 32px;
@@ -382,7 +386,7 @@ const resetForm = () => {
     justify-content: center;
 
     &:hover:not(.is-disabled) {
-      background: rgba($success, 0.15);
+      background: rgba($success, 0.3);
       transform: translateY(-1px);
     }
 
