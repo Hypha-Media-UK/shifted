@@ -1,13 +1,11 @@
 <template>
   <div class="month-view">
     <div class="month-view__header">
-      <button class="btn btn-secondary" @click="previousMonth">
+      <button class="btn btn-secondary btn-icon" @click="previousMonth">
         <span class="material-icons-round">chevron_left</span>
-        <span class="hide-sm">Previous</span>
       </button>
       <h2 class="month-view__title">{{ formattedMonth }}</h2>
-      <button class="btn btn-secondary" @click="nextMonth">
-        <span class="hide-sm">Next</span>
+      <button class="btn btn-secondary btn-icon" @click="nextMonth">
         <span class="material-icons-round">chevron_right</span>
       </button>
     </div>
@@ -179,14 +177,6 @@ const previousMonth = () => {
       top: calc(116px + $spacing-lg); // Adjusted for mobile header height
       padding: $spacing-sm;
       margin-bottom: $spacing-md;
-      
-      .btn {
-        padding: $spacing-sm;
-        
-        .material-icons-round {
-          margin: 0;
-        }
-      }
     }
 
     &:hover {
@@ -217,6 +207,29 @@ const previousMonth = () => {
     @media (max-width: $breakpoint-sm) {
       gap: $spacing-xs;
       padding-bottom: $spacing-lg;
+    }
+  }
+}
+
+.btn-icon {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .material-icons-round {
+    margin: 0;
+    font-size: 1.25rem;
+  }
+
+  @media (max-width: $breakpoint-sm) {
+    width: 32px;
+    height: 32px;
+
+    .material-icons-round {
+      font-size: 1rem;
     }
   }
 }

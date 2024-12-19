@@ -31,7 +31,7 @@
 
     <main class="app__main">
       <div class="container">
-        <Transition name="scale" mode="out-in">
+        <Transition name="fade-scale" mode="out-in">
           <MonthView
             v-if="currentView === 'month'"
             :accent-color="accentColor"
@@ -71,7 +71,7 @@ interface ShiftMap {
 
 // Constants
 const STORAGE_KEY = 'shift-tracker-data';
-const accentColor = '#2563eb';
+const accentColor = '#7c3aed';
 
 // State
 const currentView = ref<'month' | 'year'>('month');
@@ -266,14 +266,14 @@ onMounted(() => {
   }
 }
 
-.scale-enter-active,
-.scale-leave-active {
+.fade-scale-enter-active,
+.fade-scale-leave-active {
   transition: all $transition-speed $transition-bounce;
 }
 
-.scale-enter-from,
-.scale-leave-to {
+.fade-scale-enter-from,
+.fade-scale-leave-to {
   opacity: 0;
-  transform: scale(0.95);
+  transform: scale(0.98) translateY(10px);
 }
 </style>

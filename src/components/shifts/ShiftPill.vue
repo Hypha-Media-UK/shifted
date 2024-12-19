@@ -1,7 +1,7 @@
 <template>
   <div 
     class="shift-pill"
-    :style="{ backgroundColor: `${accentColor}15` }"
+    :class="timeOfDayClass"
     :title="`${formatShiftTime(shift.startTime)} - ${formatShiftTime(shift.endTime)}`"
   >
     <span class="shift-pill__time" @click.stop="$emit('edit')">
@@ -20,6 +20,8 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
+
 interface ShiftTime {
   startTime: string;
   endTime: string;
@@ -29,7 +31,7 @@ interface Shift extends ShiftTime {
   id: number;
 }
 
-defineProps<{
+const props = defineProps<{
   shift: Shift;
   accentColor: string;
 }>();
@@ -43,6 +45,20 @@ const formatShiftTime = (time: string) => {
   const [hours, minutes] = time.split(':');
   return `${hours}:${minutes}`;
 };
+
+const timeOfDayClass = computed(() => {
+  const hour = parseInt(props.shift.startTime.split(':')[0]);
+  
+  if (hour >= 5 && hour < 12) {
+    return 'is-morning';
+  } else if (hour >= 12 && hour < 17) {
+    return 'is-afternoon';
+  } else if (hour >= 17 && hour < 22) {
+    return 'is-evening';
+  } else {
+    return 'is-night';
+  }
+});
 </script>
 
 <style lang="scss" scoped>
@@ -62,8 +78,51 @@ const formatShiftTime = (time: string) => {
   flex: 1;
   max-width: 150px;
 
+  &.is-morning {
+    background-color: rgba($morning, 0.2);
+    border-color: rgba($morning, 0.3);
+    .shift-pill__time:hover {
+      color: darken($morning, 35%);
+      .material-icons-round {
+        color: darken($morning, 35%);
+      }
+    }
+  }
+
+  &.is-afternoon {
+    background-color: rgba($afternoon, 0.2);
+    border-color: rgba($afternoon, 0.3);
+    .shift-pill__time:hover {
+      color: darken($afternoon, 35%);
+      .material-icons-round {
+        color: darken($afternoon, 35%);
+      }
+    }
+  }
+
+  &.is-evening {
+    background-color: rgba($evening, 0.2);
+    border-color: rgba($evening, 0.3);
+    .shift-pill__time:hover {
+      color: darken($evening, 35%);
+      .material-icons-round {
+        color: darken($evening, 35%);
+      }
+    }
+  }
+
+  &.is-night {
+    background-color: rgba($night, 0.2);
+    border-color: rgba($night, 0.3);
+    .shift-pill__time:hover {
+      color: darken($night, 35%);
+      .material-icons-round {
+        color: darken($night, 35%);
+      }
+    }
+  }
+
   &:hover {
-    border-color: rgba($primary, 0.2);
     box-shadow: $shadow-sm;
   }
 
@@ -85,14 +144,6 @@ const formatShiftTime = (time: string) => {
       font-size: 1rem;
       color: $text-light;
       flex-shrink: 0;
-    }
-
-    &:hover {
-      color: $primary;
-
-      .material-icons-round {
-        color: $primary;
-      }
     }
 
     @media (max-width: $breakpoint-sm) {

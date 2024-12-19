@@ -39,16 +39,14 @@
     <div class="shift-editor__actions">
       <template v-if="isEditing">
         <button 
-          class="btn btn-primary" 
+          class="btn btn-success" 
           @click="$emit('update')"
           :disabled="!isValid || hasOverlap"
         >
-          <span class="material-icons-round">save</span>
-          <span class="hide-sm">Update</span>
+          <span class="material-icons-round">check</span>
         </button>
-        <button class="btn btn-danger" @click="$emit('delete')">
+        <button class="btn btn-danger btn-icon" @click="$emit('delete')">
           <span class="material-icons-round">delete</span>
-          <span class="hide-sm">Delete</span>
         </button>
         <button class="btn btn-secondary" @click="$emit('cancel')">
           <span class="material-icons-round">close</span>
@@ -166,6 +164,17 @@ const isValid = computed(() => {
       .btn {
         flex: 1;
         min-width: calc(50% - #{$spacing-xs});
+
+        &.btn-icon {
+          flex: 0 0 auto;
+          min-width: 0;
+          width: 38px;
+          height: 38px;
+          padding: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
       }
     }
   }
@@ -224,6 +233,32 @@ const isValid = computed(() => {
     &:focus {
       box-shadow: 0 0 0 3px rgba($danger, 0.1);
     }
+  }
+}
+
+.btn-success {
+  background: rgba($success, 0.1);
+  color: $success;
+  border: none;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover:not(:disabled) {
+    background: rgba($success, 0.15);
+    transform: translateY(-1px);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 }
 

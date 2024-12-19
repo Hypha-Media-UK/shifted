@@ -35,7 +35,6 @@
             :title="shifts.length >= 3 ? 'Maximum shifts reached' : 'Add new shift'"
           >
             <span class="material-icons-round">add</span>
-            <span class="hide-sm">New</span>
           </button>
           <button 
             v-if="clipboardShift"
@@ -50,14 +49,6 @@
           </button>
         </div>
       </div>
-      <button class="day-row__expand" @click.stop="$emit('expand')">
-        <span 
-          class="material-icons-round"
-          :class="{ 'is-rotated': isExpanded }"
-        >
-          expand_more
-        </span>
-      </button>
     </div>
 
     <Transition name="slide-up">
@@ -359,20 +350,16 @@ const resetForm = () => {
   }
 
   &__action-btn {
-    padding: $spacing-xs $spacing-md;
+    padding: $spacing-xs $spacing-sm;
     border-radius: $border-radius;
     border: none;
     font-size: $font-size-sm;
     cursor: pointer;
-    transition: background-color $transition-speed ease;
+    transition: all $transition-speed ease;
     display: inline-flex;
     align-items: center;
     gap: $spacing-xs;
     font-weight: $font-weight-medium;
-
-    @media (max-width: $breakpoint-sm) {
-      padding: $spacing-xs;
-    }
 
     .material-icons-round {
       font-size: 1.2rem;
@@ -387,11 +374,20 @@ const resetForm = () => {
   }
 
   &__new-btn {
-    background: rgba($primary, 0.1);
-    color: $primary;
+    background: rgba($success, 0.1);
+    color: $success;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    justify-content: center;
 
     &:hover:not(.is-disabled) {
-      background: rgba($primary, 0.15);
+      background: rgba($success, 0.15);
+      transform: translateY(-1px);
+    }
+
+    &:active:not(.is-disabled) {
+      transform: translateY(0);
     }
   }
 
@@ -414,31 +410,6 @@ const resetForm = () => {
     .material-icons-round {
       font-size: 1.1rem;
       opacity: 0.7;
-    }
-  }
-
-  &__expand {
-    background: transparent;
-    border: none;
-    padding: $spacing-xs;
-    cursor: pointer;
-    color: $text-light;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: color $transition-speed ease;
-    flex-shrink: 0;
-
-    &:hover {
-      color: $text;
-    }
-
-    .material-icons-round {
-      transition: transform $transition-speed $transition-bounce;
-      
-      &.is-rotated {
-        transform: rotate(180deg);
-      }
     }
   }
 

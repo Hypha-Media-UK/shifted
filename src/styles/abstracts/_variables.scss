@@ -1,15 +1,21 @@
 // Colors
-$primary: #2563eb;
-$secondary: #0ea5e9;
-$background: #f8fafc;
-$text: #0f172a;
-$text-light: #64748b;
-$border: #e2e8f0;
-$success: #22c55e;
-$danger: #ef4444;
+$primary: #7c3aed; // Warmer purple
+$secondary: #06b6d4; // Vibrant cyan
+$success: #22c55e; // Bright green
+$background: #fafaf9; // Warmer background
+$text: #1f1f1f; // Softer black
+$text-light: #71717a; // Warmer gray
+$border: #e5e5e5; // Warmer border
+$danger: #f43f5e; // Warmer red
+
+// Time-based colors (for shift pills)
+$morning: #fbbf24; // Brighter yellow
+$afternoon: #3b82f6; // Brighter blue
+$evening: #8b5cf6; // Brighter purple
+$night: #64748b; // Soft slate
 
 // Gradients
-$gradient-primary: linear-gradient(135deg, $primary, $secondary);
+$gradient-primary: linear-gradient(135deg, #8b5cf6, #3b82f6); // Purple to blue gradient
 
 // Spacing
 $spacing-xs: 0.25rem;

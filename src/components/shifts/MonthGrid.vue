@@ -11,7 +11,7 @@
           'has-shifts': day.shifts.length > 0,
           'is-clickable': day.inMonth && day.shifts.length > 0
         }"
-        :style="day.shifts.length ? { backgroundColor: accentColor + '15' } : {}"
+        :style="getDayStyle(day)"
         @click="handleDayClick(day)"
       >
         <span v-if="day.inMonth">{{ day.dayOfMonth }}</span>
@@ -80,6 +80,47 @@ const daysInMonth = computed(() => {
   });
 });
 
+const getTimeOfDay = (time: string) => {
+  const hour = parseInt(time.split(':')[0]);
+  
+  if (hour >= 5 && hour < 12) {
+    return 'morning';
+  } else if (hour >= 12 && hour < 17) {
+    return 'afternoon';
+  } else if (hour >= 17 && hour < 22) {
+    return 'evening';
+  } else {
+    return 'night';
+  }
+};
+
+const getDayStyle = (day: Day) => {
+  if (!day.shifts.length) return {};
+
+  // Get the first shift's time period to determine the color
+  const firstShift = day.shifts[0];
+  const timeOfDay = getTimeOfDay(firstShift.startTime);
+  
+  const colors = {
+    morning: 'var(--morning-color)',
+    afternoon: 'var(--afternoon-color)',
+    evening: 'var(--evening-color)',
+    night: 'var(--night-color)'
+  };
+
+  const borderColors = {
+    morning: 'var(--morning-border)',
+    afternoon: 'var(--afternoon-border)',
+    evening: 'var(--evening-border)',
+    night: 'var(--night-border)'
+  };
+
+  return {
+    '--shift-color': colors[timeOfDay],
+    '--shift-border': borderColors[timeOfDay]
+  };
+};
+
 const handleDayClick = (day: Day) => {
   if (day.inMonth && day.shifts.length > 0) {
     emit('select-date', new Date(day.date));
@@ -116,6 +157,17 @@ const handleDayClick = (day: Day) => {
   }
 
   &__day {
+    --morning-color: #{rgba($morning, 0.15)};
+    --afternoon-color: #{rgba($afternoon, 0.15)};
+    --evening-color: #{rgba($evening, 0.15)};
+    --night-color: #{rgba($night, 0.15)};
+    --morning-border: #{rgba($morning, 0.4)};
+    --afternoon-border: #{rgba($afternoon, 0.4)};
+    --evening-border: #{rgba($evening, 0.4)};
+    --night-border: #{rgba($night, 0.4)};
+    --shift-color: transparent;
+    --shift-border: transparent;
+
     aspect-ratio: 1;
     display: flex;
     align-items: center;
@@ -133,14 +185,18 @@ const handleDayClick = (day: Day) => {
 
     &.has-shifts {
       font-weight: $font-weight-bold;
-      border-color: rgba($primary, 0.1);
+      background-color: var(--shift-color);
+      border-color: var(--shift-border);
     }
 
     &.is-clickable {
       cursor: pointer;
 
       &:hover {
-        background-color: rgba($primary, 0.05);
+        transform: scale(1.05);
+        box-shadow: $shadow-sm;
+        background-color: var(--shift-color);
+        border-color: var(--shift-border);
       }
     }
 
