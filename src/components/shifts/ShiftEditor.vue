@@ -1,83 +1,89 @@
 <template>
   <div class="shift-editor">
-    <div class="shift-editor__form">
-      <div class="form-group">
-        <label class="form-label">
-          <span class="material-icons-round">schedule</span>
-          Start Time
-        </label>
-        <input 
-          type="time" 
-          class="form-control" 
-          v-model="shift.startTime"
-          :disabled="disabled"
-          :class="{ 'has-error': hasOverlap }"
-        >
+    <div class="shift-editor__container">
+      <div class="shift-editor__form">
+        <div class="form-group">
+          <label class="form-label">
+            <span class="material-icons-round">schedule</span>
+            Start Time
+          </label>
+          <input 
+            type="time" 
+            class="form-control" 
+            v-model="shift.startTime"
+            :disabled="disabled"
+            :class="{ 'has-error': hasOverlap }"
+          >
+        </div>
+        <div class="form-group">
+          <label class="form-label">
+            <span class="material-icons-round">schedule</span>
+            End Time
+          </label>
+          <input 
+            type="time" 
+            class="form-control" 
+            v-model="shift.endTime"
+            :disabled="disabled"
+            :class="{ 'has-error': hasOverlap }"
+          >
+        </div>
       </div>
-      <div class="form-group">
-        <label class="form-label">
-          <span class="material-icons-round">schedule</span>
-          End Time
-        </label>
-        <input 
-          type="time" 
-          class="form-control" 
-          v-model="shift.endTime"
-          :disabled="disabled"
-          :class="{ 'has-error': hasOverlap }"
-        >
+      
+      <div class="shift-editor__actions">
+        <template v-if="isEditing">
+          <div class="shift-editor__action-group">
+            <button class="btn btn-secondary btn-sm" @click="$emit('cancel')">
+              <span class="material-icons-round">close</span>
+              <span class="hide-sm">Cancel</span>
+            </button>
+            <div class="shift-editor__action-pair">
+              <button class="btn btn-danger btn-icon" @click="$emit('delete')">
+                <span class="material-icons-round">delete</span>
+              </button>
+              <button 
+                class="btn btn-success btn-icon btn-wide" 
+                @click="$emit('update')"
+                :disabled="!isValid || hasOverlap"
+              >
+                <span class="material-icons-round">check</span>
+              </button>
+            </div>
+          </div>
+        </template>
+        <template v-else>
+          <div class="shift-editor__action-group">
+            <button class="btn btn-secondary btn-sm" @click="$emit('cancel')">
+              <span class="material-icons-round">close</span>
+              <span class="hide-sm">Cancel</span>
+            </button>
+            <button 
+              class="btn btn-primary btn-sm" 
+              @click="$emit('apply')"
+              :disabled="!isValid || hasOverlap || disabled"
+            >
+              <span class="material-icons-round">check</span>
+              <span class="hide-sm">Apply Once</span>
+            </button>
+            <button 
+              class="btn btn-secondary btn-sm" 
+              @click="$emit('apply-and-copy')"
+              :disabled="!isValid || hasOverlap || disabled"
+            >
+              <span class="material-icons-round">content_copy</span>
+              <span class="hide-sm">Apply and Copy</span>
+            </button>
+          </div>
+        </template>
       </div>
     </div>
-    
+
     <Transition name="fade">
       <div v-if="warning" class="shift-editor__warning">
         <span class="material-icons-round">warning</span>
         {{ warning }}
       </div>
     </Transition>
-
-    <div class="shift-editor__actions">
-      <template v-if="isEditing">
-        <button class="btn btn-secondary" @click="$emit('cancel')">
-          <span class="material-icons-round">close</span>
-          <span class="hide-sm">Cancel</span>
-        </button>
-        <div class="shift-editor__action-group">
-          <button class="btn btn-danger btn-icon" @click="$emit('delete')">
-            <span class="material-icons-round">delete</span>
-          </button>
-          <button 
-            class="btn btn-success btn-icon btn-wide" 
-            @click="$emit('update')"
-            :disabled="!isValid || hasOverlap"
-          >
-            <span class="material-icons-round">check</span>
-          </button>
-        </div>
-      </template>
-      <template v-else>
-        <button 
-          class="btn btn-primary" 
-          @click="$emit('apply')"
-          :disabled="!isValid || hasOverlap || disabled"
-        >
-          <span class="material-icons-round">check</span>
-          <span class="hide-sm">Apply Once</span>
-        </button>
-        <button 
-          class="btn btn-secondary" 
-          @click="$emit('apply-and-copy')"
-          :disabled="!isValid || hasOverlap || disabled"
-        >
-          <span class="material-icons-round">content_copy</span>
-          <span class="hide-sm">Apply and Copy</span>
-        </button>
-        <button class="btn btn-secondary" @click="$emit('cancel')">
-          <span class="material-icons-round">close</span>
-          <span class="hide-sm">Cancel</span>
-        </button>
-      </template>
-    </div>
   </div>
 </template>
 
@@ -126,14 +132,31 @@ const isValid = computed(() => {
 @import '../../styles/abstracts/variables';
 
 .shift-editor {
-  &__form {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+  &__container {
+    display: flex;
     gap: $spacing-md;
+    align-items: center;
 
     @media (max-width: $breakpoint-sm) {
-      grid-template-columns: 1fr;
+      flex-direction: column;
       gap: $spacing-sm;
+    }
+  }
+
+  &__form {
+    display: flex;
+    gap: $spacing-sm;
+    flex: 1;
+    min-width: 0;
+
+    @media (max-width: $breakpoint-sm) {
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .form-group {
+      flex: 1;
+      min-width: 0;
     }
   }
 
@@ -154,43 +177,57 @@ const isValid = computed(() => {
   }
 
   &__actions {
-    display: flex;
-    gap: $spacing-sm;
-    margin-top: $spacing-lg;
-    flex-wrap: wrap;
+    flex: 0 0 auto;
 
     @media (max-width: $breakpoint-sm) {
-      gap: $spacing-xs;
-      margin-top: $spacing-md;
-      
-      .btn {
-        flex: 1;
-        min-width: calc(50% - #{$spacing-xs});
-      }
+      width: 100%;
     }
   }
 
   &__action-group {
     display: flex;
-    gap: $spacing-sm;
-    margin-left: auto;
+    gap: $spacing-xs;
+    align-items: center;
 
     @media (max-width: $breakpoint-sm) {
-      gap: $spacing-xs;
+      flex-direction: column;
+      width: 100%;
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
     }
 
+    @media (min-width: $breakpoint-sm) {
+      .btn {
+        flex: 0 0 auto;
+      }
+    }
+  }
+
+  &__action-pair {
+    display: flex;
+    gap: $spacing-xs;
+    margin-left: $spacing-xs;
+
     .btn-icon {
-      width: 38px;
-      height: 38px;
+      width: 32px;
+      height: 32px;
       padding: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      flex: 0 0 auto;
 
       &.btn-wide {
-        width: 76px;
+        width: 64px;
       }
+    }
+
+    @media (max-width: $breakpoint-sm) {
+      width: 100%;
+      margin-left: 0;
+      justify-content: flex-end;
     }
   }
 }
@@ -216,7 +253,7 @@ const isValid = computed(() => {
 
 .form-control {
   width: 100%;
-  padding: $spacing-sm $spacing-md;
+  padding: $spacing-xs $spacing-sm;
   border: 2px solid $border;
   border-radius: $border-radius-sm;
   font-size: $font-size-base;
@@ -248,6 +285,16 @@ const isValid = computed(() => {
     &:focus {
       box-shadow: 0 0 0 3px rgba($danger, 0.1);
     }
+  }
+}
+
+.btn-sm {
+  padding: $spacing-xs $spacing-sm;
+  font-size: $font-size-sm;
+  min-height: 32px;
+
+  .material-icons-round {
+    font-size: 1.1rem;
   }
 }
 
