@@ -38,20 +38,22 @@
 
     <div class="shift-editor__actions">
       <template v-if="isEditing">
-        <button 
-          class="btn btn-success" 
-          @click="$emit('update')"
-          :disabled="!isValid || hasOverlap"
-        >
-          <span class="material-icons-round">check</span>
-        </button>
-        <button class="btn btn-danger btn-icon" @click="$emit('delete')">
-          <span class="material-icons-round">delete</span>
-        </button>
         <button class="btn btn-secondary" @click="$emit('cancel')">
           <span class="material-icons-round">close</span>
           <span class="hide-sm">Cancel</span>
         </button>
+        <div class="shift-editor__action-group">
+          <button class="btn btn-danger btn-icon" @click="$emit('delete')">
+            <span class="material-icons-round">delete</span>
+          </button>
+          <button 
+            class="btn btn-success btn-icon btn-wide" 
+            @click="$emit('update')"
+            :disabled="!isValid || hasOverlap"
+          >
+            <span class="material-icons-round">check</span>
+          </button>
+        </div>
       </template>
       <template v-else>
         <button 
@@ -164,17 +166,30 @@ const isValid = computed(() => {
       .btn {
         flex: 1;
         min-width: calc(50% - #{$spacing-xs});
+      }
+    }
+  }
 
-        &.btn-icon {
-          flex: 0 0 auto;
-          min-width: 0;
-          width: 38px;
-          height: 38px;
-          padding: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
+  &__action-group {
+    display: flex;
+    gap: $spacing-sm;
+    margin-left: auto;
+
+    @media (max-width: $breakpoint-sm) {
+      gap: $spacing-xs;
+    }
+
+    .btn-icon {
+      width: 38px;
+      height: 38px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+
+      &.btn-wide {
+        width: 76px;
       }
     }
   }
@@ -237,18 +252,12 @@ const isValid = computed(() => {
 }
 
 .btn-success {
-  background: rgba($success, 0.1);
+  background: rgba($success, 0.25);
   color: $success;
   border: none;
-  width: 38px;
-  height: 38px;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 
   &:hover:not(:disabled) {
-    background: rgba($success, 0.15);
+    background: rgba($success, 0.3);
     transform: translateY(-1px);
   }
 
