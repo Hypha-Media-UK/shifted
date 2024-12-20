@@ -10,9 +10,9 @@
           <input 
             type="time" 
             class="form-control" 
-            v-model="shift.startTime"
-            :disabled="disabled"
-            :class="{ 'has-error': hasOverlap }"
+            v-model="props.shift.startTime"
+            :disabled="props.disabled"
+            :class="{ 'has-error': props.hasOverlap }"
           >
         </div>
         <div class="form-group">
@@ -23,19 +23,18 @@
           <input 
             type="time" 
             class="form-control" 
-            v-model="shift.endTime"
-            :disabled="disabled"
-            :class="{ 'has-error': hasOverlap }"
+            v-model="props.shift.endTime"
+            :disabled="props.disabled"
+            :class="{ 'has-error': props.hasOverlap }"
           >
         </div>
       </div>
       
       <div class="shift-editor__actions">
-        <template v-if="isEditing">
+        <template v-if="props.isEditing">
           <div class="shift-editor__action-group">
-            <button class="btn btn-secondary btn-sm" @click="$emit('cancel')">
+            <button class="btn btn-secondary btn-icon" @click="$emit('cancel')">
               <span class="material-icons-round">close</span>
-              <span class="hide-sm">Cancel</span>
             </button>
             <div class="shift-editor__action-pair">
               <button class="btn btn-danger btn-icon" @click="$emit('delete')">
@@ -44,7 +43,7 @@
               <button 
                 class="btn btn-success btn-icon btn-wide" 
                 @click="$emit('update')"
-                :disabled="!isValid || hasOverlap"
+                :disabled="!isValid || props.hasOverlap"
               >
                 <span class="material-icons-round">check</span>
               </button>
@@ -53,25 +52,24 @@
         </template>
         <template v-else>
           <div class="shift-editor__action-group">
-            <button class="btn btn-secondary btn-sm" @click="$emit('cancel')">
+            <button class="btn btn-secondary btn-icon" @click="$emit('cancel')">
               <span class="material-icons-round">close</span>
-              <span class="hide-sm">Cancel</span>
             </button>
             <button 
-              class="btn btn-primary btn-sm" 
+              class="btn btn-success" 
               @click="$emit('apply')"
-              :disabled="!isValid || hasOverlap || disabled"
+              :disabled="!isValid || props.hasOverlap || props.disabled"
             >
               <span class="material-icons-round">check</span>
-              <span class="hide-sm">Apply Once</span>
+              <span>Apply Once</span>
             </button>
             <button 
-              class="btn btn-secondary btn-sm" 
+              class="btn btn-secondary" 
               @click="$emit('apply-and-copy')"
-              :disabled="!isValid || hasOverlap || disabled"
+              :disabled="!isValid || props.hasOverlap || props.disabled"
             >
               <span class="material-icons-round">content_copy</span>
-              <span class="hide-sm">Apply and Copy</span>
+              <span>Apply and Copy</span>
             </button>
           </div>
         </template>
@@ -79,9 +77,9 @@
     </div>
 
     <Transition name="fade">
-      <div v-if="warning" class="shift-editor__warning">
+      <div v-if="props.warning" class="shift-editor__warning">
         <span class="material-icons-round">warning</span>
-        {{ warning }}
+        {{ props.warning }}
       </div>
     </Transition>
   </div>
@@ -135,17 +133,18 @@ const isValid = computed(() => {
   &__container {
     display: flex;
     gap: $spacing-md;
-    align-items: center;
+    align-items: flex-end;
 
     @media (max-width: $breakpoint-sm) {
       flex-direction: column;
-      gap: $spacing-sm;
+      gap: $spacing-md;
+      align-items: stretch;
     }
   }
 
   &__form {
     display: flex;
-    gap: $spacing-sm;
+    gap: $spacing-md;
     flex: 1;
     min-width: 0;
 
@@ -186,7 +185,7 @@ const isValid = computed(() => {
 
   &__action-group {
     display: flex;
-    gap: $spacing-xs;
+    gap: $spacing-sm;
     align-items: center;
 
     @media (max-width: $breakpoint-sm) {
@@ -202,6 +201,25 @@ const isValid = computed(() => {
     @media (min-width: $breakpoint-sm) {
       .btn {
         flex: 0 0 auto;
+        min-width: 120px;
+        height: 32px;
+        padding: 0 $spacing-sm;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: $spacing-xs;
+        font-size: $font-size-sm;
+        font-weight: $font-weight-medium;
+
+        &.btn-icon {
+          min-width: 0;
+          width: 32px;
+          padding: 0;
+        }
+
+        .material-icons-round {
+          font-size: 1.1rem;
+        }
       }
     }
   }
@@ -262,6 +280,7 @@ const isValid = computed(() => {
   background-color: white;
   color: $text;
   appearance: none;
+  height: 32px;
   
   &:hover:not(:disabled) {
     border-color: $text-light;
@@ -285,16 +304,6 @@ const isValid = computed(() => {
     &:focus {
       box-shadow: 0 0 0 3px rgba($danger, 0.1);
     }
-  }
-}
-
-.btn-sm {
-  padding: $spacing-xs $spacing-sm;
-  font-size: $font-size-sm;
-  min-height: 32px;
-
-  .material-icons-round {
-    font-size: 1.1rem;
   }
 }
 
