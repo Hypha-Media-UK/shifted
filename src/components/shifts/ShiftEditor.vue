@@ -55,22 +55,22 @@
             <button class="btn btn-secondary btn-icon" @click="$emit('cancel')">
               <span class="material-icons-round">close</span>
             </button>
-            <button 
-              class="btn btn-success" 
-              @click="$emit('apply')"
-              :disabled="!isValid || props.hasOverlap || props.disabled"
-            >
-              <span class="material-icons-round">check</span>
-              <span>Apply Once</span>
-            </button>
-            <button 
-              class="btn btn-secondary" 
-              @click="$emit('apply-and-copy')"
-              :disabled="!isValid || props.hasOverlap || props.disabled"
-            >
-              <span class="material-icons-round">content_copy</span>
-              <span>Apply and Copy</span>
-            </button>
+            <div class="shift-editor__action-pair">
+              <button 
+                class="btn btn-success btn-icon" 
+                @click="$emit('apply')"
+                :disabled="!isValid || props.hasOverlap || props.disabled"
+              >
+                <span class="material-icons-round">check</span>
+              </button>
+              <button 
+                class="btn btn-primary btn-icon" 
+                @click="$emit('apply-and-copy')"
+                :disabled="!isValid || props.hasOverlap || props.disabled"
+              >
+                <span class="material-icons-round">content_copy</span>
+              </button>
+            </div>
           </div>
         </template>
       </div>
@@ -130,15 +130,16 @@ const isValid = computed(() => {
 @import '../../styles/abstracts/variables';
 
 .shift-editor {
+  background-color: rgba($background, 0.5);
+
   &__container {
     display: flex;
-    gap: $spacing-md;
+    gap: $spacing-lg;
     align-items: flex-end;
 
     @media (max-width: $breakpoint-sm) {
       flex-direction: column;
       gap: $spacing-md;
-      align-items: stretch;
     }
   }
 
@@ -160,16 +161,16 @@ const isValid = computed(() => {
   }
 
   &__warning {
-    margin-top: $spacing-md;
+    margin-top: 0;
     padding: $spacing-sm $spacing-md;
     background-color: rgba($danger, 0.1);
     color: $danger;
-    border-radius: $border-radius;
     font-size: $font-size-sm;
     display: flex;
     align-items: center;
     gap: $spacing-xs;
-    
+    border-top: 1px solid rgba($danger, 0.1);
+
     .material-icons-round {
       font-size: 1.1rem;
     }
@@ -196,29 +197,15 @@ const isValid = computed(() => {
         width: 100%;
         justify-content: center;
       }
-    }
 
-    @media (min-width: $breakpoint-sm) {
-      .btn {
-        flex: 0 0 auto;
-        min-width: 120px;
-        height: 32px;
-        padding: 0 $spacing-sm;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
+      .shift-editor__action-pair {
+        display: flex;
         gap: $spacing-xs;
-        font-size: $font-size-sm;
-        font-weight: $font-weight-medium;
+        width: 100%;
+        justify-content: flex-end;
 
-        &.btn-icon {
-          min-width: 0;
-          width: 32px;
-          padding: 0;
-        }
-
-        .material-icons-round {
-          font-size: 1.1rem;
+        .btn {
+          width: auto;
         }
       }
     }
@@ -240,12 +227,6 @@ const isValid = computed(() => {
       &.btn-wide {
         width: 64px;
       }
-    }
-
-    @media (max-width: $breakpoint-sm) {
-      width: 100%;
-      margin-left: 0;
-      justify-content: flex-end;
     }
   }
 }
@@ -307,6 +288,27 @@ const isValid = computed(() => {
   }
 }
 
+.btn {
+  &.btn-icon {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+
+    .material-icons-round {
+      font-size: 1.1rem;
+    }
+
+    &.btn-wide {
+      width: 64px;
+    }
+  }
+}
+
 .btn-success {
   background: rgba($success, 0.25);
   color: $success;
@@ -314,6 +316,26 @@ const isValid = computed(() => {
 
   &:hover:not(:disabled) {
     background: rgba($success, 0.3);
+    transform: translateY(-1px);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.btn-primary {
+  background: rgba($primary, 0.25);
+  color: $primary;
+  border: none;
+
+  &:hover:not(:disabled) {
+    background: rgba($primary, 0.3);
     transform: translateY(-1px);
   }
 
