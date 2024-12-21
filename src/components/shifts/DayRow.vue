@@ -63,7 +63,7 @@
           @delete="deleteShift"
           @cancel="cancelEdit"
           @apply="applyShift"
-          @apply-and-copy="applyAndAddMore"
+          @apply-and-copy="copyShift"
           @toggle-holiday="toggleHoliday"
         />
       </div>
@@ -195,17 +195,8 @@ const applyShift = () => {
   emit('expand');
 };
 
-const applyAndAddMore = () => {
+const copyShift = () => {
   if (hasOverlap.value) return;
-  
-  const newShift: Shift = {
-    id: Date.now(),
-    startTime: currentShift.value.startTime,
-    endTime: currentShift.value.endTime,
-    isHoliday: currentShift.value.isHoliday
-  };
-  
-  emit('update-shifts', [...props.shifts, newShift]);
   emit('copy-shift', { ...currentShift.value });
   resetForm();
   emit('expand');

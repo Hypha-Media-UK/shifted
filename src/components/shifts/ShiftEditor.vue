@@ -50,11 +50,18 @@
                 <span class="material-icons-round">delete</span>
               </button>
               <button 
-                class="btn btn-success btn-icon btn-wide" 
+                class="btn btn-success btn-icon" 
                 @click="$emit('update')"
                 :disabled="!isValid || props.hasOverlap"
               >
                 <span class="material-icons-round">check</span>
+              </button>
+              <button 
+                class="btn btn-primary btn-icon" 
+                @click="$emit('apply-and-copy')"
+                :disabled="!isValid || props.hasOverlap"
+              >
+                <span class="material-icons-round">content_copy</span>
               </button>
             </div>
           </div>
@@ -71,13 +78,6 @@
                 :disabled="!isValid || props.hasOverlap || props.disabled"
               >
                 <span class="material-icons-round">check</span>
-              </button>
-              <button 
-                class="btn btn-primary btn-icon" 
-                @click="$emit('apply-and-copy')"
-                :disabled="!isValid || props.hasOverlap || props.disabled"
-              >
-                <span class="material-icons-round">content_copy</span>
               </button>
             </div>
           </div>
