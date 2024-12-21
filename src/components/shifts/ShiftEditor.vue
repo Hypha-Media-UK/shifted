@@ -153,10 +153,12 @@ const applyAsHoliday = () => {
     display: flex;
     gap: $spacing-lg;
     align-items: flex-end;
+    padding: $spacing-md $spacing-lg;
 
     @media (max-width: $breakpoint-sm) {
       flex-direction: column;
       gap: $spacing-md;
+      padding: $spacing-sm;
     }
   }
 
