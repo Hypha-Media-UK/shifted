@@ -3,10 +3,11 @@
     class="day-row" 
     :class="{ 
       'is-expanded': isExpanded,
-      'is-selected': isSelected
+      'is-selected': isSelected,
+      'is-past': isPastDay
     }"
   >
-    <div class="day-row__header" @click="$emit('expand')">
+    <div class="day-row__header" @click="!isPastDay && $emit('expand')">
       <div class="day-row__date">
         <span class="day-row__weekday">{{ formattedWeekday }}</span>
         <span class="day-row__day">{{ formattedDay }}</span>
@@ -18,30 +19,31 @@
             :key="shift.id"
             :shift="shift"
             :accent-color="accentColor"
+            :is-past="isPastDay"
             @edit="editShift(shift)"
             @delete="quickDelete(shift.id)"
           />
         </template>
-        <div v-else class="day-row__empty">
+        <div v-else class="day-row__empty" :class="{ 'is-past': isPastDay }">
           <span class="material-icons-round">schedule</span>
           No shifts
         </div>
         <div class="day-row__actions">
           <button 
             class="day-row__action-btn day-row__new-btn"
-            :class="{ 'is-disabled': shifts.length >= 3 }"
+            :class="{ 'is-disabled': shifts.length >= 3 || isPastDay }"
             @click.stop="handleNewClick"
-            :disabled="shifts.length >= 3"
-            :title="shifts.length >= 3 ? 'Maximum shifts reached' : 'Add new shift'"
+            :disabled="shifts.length >= 3 || isPastDay"
+            :title="getNewButtonTitle"
           >
             <span class="material-icons-round">add</span>
           </button>
           <button 
             v-if="clipboardShift"
             class="day-row__action-btn day-row__add-btn"
-            :class="{ 'is-disabled': shifts.length >= 3 || hasClipboardShift || wouldClipboardShiftOverlap }"
+            :class="{ 'is-disabled': shifts.length >= 3 || hasClipboardShift || wouldClipboardShiftOverlap || isPastDay }"
             @click.stop="applyClipboardShift"
-            :disabled="shifts.length >= 3 || hasClipboardShift || wouldClipboardShiftOverlap"
+            :disabled="shifts.length >= 3 || hasClipboardShift || wouldClipboardShiftOverlap || isPastDay"
             :title="getAddButtonTitle"
           >
             <span class="material-icons-round">content_paste</span>
@@ -56,7 +58,7 @@
         <ShiftEditor
           :shift="currentShift"
           :is-editing="isEditing"
-          :disabled="shifts.length >= 3 && !isEditing"
+          :disabled="shifts.length >= 3 && !isEditing || isPastDay"
           :has-overlap="hasOverlap"
           :warning="validationWarning"
           @update="updateShift"
@@ -73,7 +75,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { format } from 'date-fns';
+import { format, isBefore, startOfDay } from 'date-fns';
 import ShiftEditor from './ShiftEditor.vue';
 import ShiftPill from './ShiftPill.vue';
 
@@ -116,6 +118,11 @@ const formattedDay = computed(() => format(props.date, 'd'));
 
 const sortedShifts = computed(() => {
   return [...props.shifts].sort((a, b) => a.startTime.localeCompare(b.startTime));
+});
+
+const isPastDay = computed(() => {
+  const today = startOfDay(new Date());
+  return isBefore(props.date, today);
 });
 
 const timeToMinutes = (time: string): number => {
@@ -161,10 +168,18 @@ const hasClipboardShift = computed(() => {
 const validationWarning = computed(() => {
   if (!currentShift.value.startTime || !currentShift.value.endTime) return '';
   if (hasOverlap.value) return 'This shift overlaps with an existing shift';
+  if (isPastDay.value) return 'Cannot modify shifts in past days';
   return '';
 });
 
+const getNewButtonTitle = computed(() => {
+  if (isPastDay.value) return 'Cannot add shifts to past days';
+  if (props.shifts.length >= 3) return 'Maximum shifts reached';
+  return 'Add new shift';
+});
+
 const getAddButtonTitle = computed(() => {
+  if (isPastDay.value) return 'Cannot add shifts to past days';
   if (props.shifts.length >= 3) return 'Maximum shifts reached';
   if (hasClipboardShift.value) return 'This shift has already been added';
   if (wouldClipboardShiftOverlap.value) return 'This shift would overlap with an existing shift';
@@ -172,16 +187,17 @@ const getAddButtonTitle = computed(() => {
 });
 
 const handleNewClick = () => {
-  if (props.shifts.length >= 3) return;
+  if (props.shifts.length >= 3 || isPastDay.value) return;
   emit('expand');
 };
 
 const quickDelete = (shiftId: number) => {
+  if (isPastDay.value) return;
   emit('update-shifts', props.shifts.filter(shift => shift.id !== shiftId));
 };
 
 const applyShift = () => {
-  if (hasOverlap.value) return;
+  if (hasOverlap.value || isPastDay.value) return;
   
   const newShift: Shift = {
     id: Date.now(),
@@ -191,12 +207,13 @@ const applyShift = () => {
   };
   
   emit('update-shifts', [...props.shifts, newShift]);
+  emit('clear-clipboard');
   resetForm();
   emit('expand');
 };
 
 const copyShift = () => {
-  if (hasOverlap.value) return;
+  if (hasOverlap.value || isPastDay.value) return;
   emit('copy-shift', { ...currentShift.value });
   resetForm();
   emit('expand');
@@ -206,7 +223,8 @@ const applyClipboardShift = () => {
   if (!props.clipboardShift || 
       props.shifts.length >= 3 || 
       hasClipboardShift.value || 
-      wouldClipboardShiftOverlap.value) return;
+      wouldClipboardShiftOverlap.value ||
+      isPastDay.value) return;
   
   const newShift: Shift = {
     id: Date.now(),
@@ -219,7 +237,7 @@ const applyClipboardShift = () => {
 };
 
 const updateShift = () => {
-  if (hasOverlap.value) return;
+  if (hasOverlap.value || isPastDay.value) return;
   
   const updatedShifts = props.shifts.map(shift => 
     shift.id === editingShiftId.value 
@@ -238,12 +256,14 @@ const updateShift = () => {
 };
 
 const deleteShift = () => {
+  if (isPastDay.value) return;
   emit('update-shifts', props.shifts.filter(shift => shift.id !== editingShiftId.value));
   resetForm();
   emit('expand');
 };
 
 const editShift = (shift: Shift) => {
+  if (isPastDay.value) return;
   isEditing.value = true;
   editingShiftId.value = shift.id;
   currentShift.value = { 
@@ -286,6 +306,41 @@ const resetForm = () => {
     background: rgba($primary, 0.02);
   }
 
+  &.is-past {
+    opacity: 0.75;
+    background: rgba($text, 0.02);
+    border-color: rgba($text, 0.1);
+
+    .day-row__header {
+      cursor: default;
+
+      &:hover {
+        background-color: transparent;
+      }
+    }
+
+    .day-row__weekday,
+    .day-row__day {
+      color: rgba($text, 0.6);
+    }
+
+    .day-row__empty {
+      color: rgba($text, 0.4);
+
+      .material-icons-round {
+        opacity: 0.4;
+      }
+    }
+
+    .day-row__action-btn {
+      &.is-disabled {
+        opacity: 0.3;
+        background: rgba($text, 0.05) !important;
+        color: rgba($text, 0.3) !important;
+      }
+    }
+  }
+
   &__header {
     display: flex;
     align-items: center;
@@ -319,6 +374,7 @@ const resetForm = () => {
     font-size: $font-size-sm;
     color: $text-light;
     font-weight: $font-weight-medium;
+    transition: color $transition-speed ease;
   }
 
   &__day {
@@ -326,6 +382,7 @@ const resetForm = () => {
     font-weight: $font-weight-bold;
     color: $text;
     line-height: 1.2;
+    transition: color $transition-speed ease;
 
     @media (max-width: $breakpoint-sm) {
       font-size: $font-size-lg;
@@ -413,10 +470,12 @@ const resetForm = () => {
     display: flex;
     align-items: center;
     gap: $spacing-xs;
+    transition: all $transition-speed ease;
 
     .material-icons-round {
       font-size: 1.1rem;
       opacity: 0.7;
+      transition: opacity $transition-speed ease;
     }
   }
 

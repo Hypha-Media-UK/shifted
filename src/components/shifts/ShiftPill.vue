@@ -1,14 +1,26 @@
 <template>
   <div 
     class="shift-pill"
-    :class="[timeOfDayClass, { 'is-holiday': shift.isHoliday }]"
+    :class="[!isPast && timeOfDayClass, { 'is-holiday': !isPast && shift.isHoliday, 'is-past': isPast }]"
     :title="`${formatShiftTime(shift.startTime)} - ${formatShiftTime(shift.endTime)}${shift.isHoliday ? ' (Holiday)' : ''}`"
   >
-    <span class="shift-pill__time" @click.stop="$emit('edit')">
+    <span 
+      v-if="!isPast"
+      class="shift-pill__time shift-pill__time--active" 
+      @click.stop="$emit('edit')"
+    >
+      <span class="material-icons-round">schedule</span>
+      {{ formatShiftTime(shift.startTime) }} - {{ formatShiftTime(shift.endTime) }}
+    </span>
+    <span 
+      v-else
+      class="shift-pill__time shift-pill__time--past"
+    >
       <span class="material-icons-round">schedule</span>
       {{ formatShiftTime(shift.startTime) }} - {{ formatShiftTime(shift.endTime) }}
     </span>
     <button 
+      v-if="!isPast"
       class="shift-pill__delete" 
       @click.stop="$emit('delete')"
       title="Delete shift"
@@ -35,6 +47,7 @@ interface Shift extends ShiftTime {
 const props = defineProps<{
   shift: Shift;
   accentColor: string;
+  isPast?: boolean;
 }>();
 
 defineEmits<{
@@ -86,7 +99,7 @@ const timeOfDayClass = computed(() => {
   &.is-morning {
     background-color: rgba($morning, 0.2);
     border-color: rgba($morning, 0.3);
-    .shift-pill__time:hover {
+    .shift-pill__time--active:hover {
       color: darken($morning, 35%);
       .material-icons-round {
         color: darken($morning, 35%);
@@ -97,7 +110,7 @@ const timeOfDayClass = computed(() => {
   &.is-afternoon {
     background-color: rgba($afternoon, 0.2);
     border-color: rgba($afternoon, 0.3);
-    .shift-pill__time:hover {
+    .shift-pill__time--active:hover {
       color: darken($afternoon, 35%);
       .material-icons-round {
         color: darken($afternoon, 35%);
@@ -108,7 +121,7 @@ const timeOfDayClass = computed(() => {
   &.is-evening {
     background-color: rgba($evening, 0.2);
     border-color: rgba($evening, 0.3);
-    .shift-pill__time:hover {
+    .shift-pill__time--active:hover {
       color: darken($evening, 35%);
       .material-icons-round {
         color: darken($evening, 35%);
@@ -119,7 +132,7 @@ const timeOfDayClass = computed(() => {
   &.is-night {
     background-color: rgba($night, 0.2);
     border-color: rgba($night, 0.3);
-    .shift-pill__time:hover {
+    .shift-pill__time--active:hover {
       color: darken($night, 35%);
       .material-icons-round {
         color: darken($night, 35%);
@@ -130,7 +143,7 @@ const timeOfDayClass = computed(() => {
   &.is-holiday {
     background-color: rgba($holiday, 0.2);
     border-color: rgba($holiday, 0.3);
-    .shift-pill__time {
+    .shift-pill__time--active {
       color: darken($holiday, 20%);
       .material-icons-round {
         color: darken($holiday, 20%);
@@ -144,7 +157,12 @@ const timeOfDayClass = computed(() => {
     }
   }
 
-  &:hover {
+  &.is-past {
+    background-color: rgba($text, 0.05);
+    border-color: rgba($text, 0.1);
+  }
+
+  &:not(.is-past):hover {
     box-shadow: $shadow-sm;
   }
 
@@ -152,7 +170,6 @@ const timeOfDayClass = computed(() => {
     display: inline-flex;
     align-items: center;
     gap: $spacing-xs;
-    cursor: pointer;
     transition: all $transition-speed ease;
     color: $text;
     font-weight: $font-weight-medium;
@@ -162,9 +179,25 @@ const timeOfDayClass = computed(() => {
     min-width: 0;
     flex: 1;
 
+    &--active {
+      cursor: pointer;
+
+      .material-icons-round {
+        color: $text-light;
+      }
+    }
+
+    &--past {
+      cursor: default;
+      color: rgba($text, 0.6);
+
+      .material-icons-round {
+        color: rgba($text, 0.4);
+      }
+    }
+
     .material-icons-round {
       font-size: 1rem;
-      color: $text-light;
       flex-shrink: 0;
     }
 
