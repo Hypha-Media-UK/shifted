@@ -28,15 +28,6 @@
             :class="{ 'has-error': props.hasOverlap }"
           >
         </div>
-        <button 
-          v-if="!props.isEditing"
-          class="btn btn-holiday btn-icon" 
-          :class="{ 'is-active': props.shift.isHoliday }"
-          @click="applyAsHoliday"
-          :disabled="props.disabled || !isValid || props.hasOverlap"
-        >
-          <span class="material-icons-round">beach_access</span>
-        </button>
       </div>
       
       <div class="shift-editor__actions">
@@ -72,6 +63,14 @@
               <span class="material-icons-round">close</span>
             </button>
             <div class="shift-editor__action-pair">
+              <button 
+                class="btn btn-holiday btn-icon" 
+                :class="{ 'is-active': props.shift.isHoliday }"
+                @click="applyAsHoliday"
+                :disabled="props.disabled || !isValid || props.hasOverlap"
+              >
+                <span class="material-icons-round">beach_access</span>
+              </button>
               <button 
                 class="btn btn-success btn-icon" 
                 @click="$emit('apply')"
@@ -173,10 +172,6 @@ const applyAsHoliday = () => {
       flex-direction: column;
       width: 100%;
       align-items: stretch;
-
-      .btn-holiday {
-        margin-top: $spacing-xs;
-      }
     }
 
     .form-group {
