@@ -52,6 +52,7 @@ import DayRow from './DayRow.vue';
 interface ShiftTime {
   startTime: string;
   endTime: string;
+  isHoliday?: boolean;
 }
 
 interface Shift extends ShiftTime {

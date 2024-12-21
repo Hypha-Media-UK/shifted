@@ -21,6 +21,7 @@ import MonthGrid from './MonthGrid.vue';
 interface ShiftTime {
   startTime: string;
   endTime: string;
+  isHoliday?: boolean;
 }
 
 interface Shift extends ShiftTime {

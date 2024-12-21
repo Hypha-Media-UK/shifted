@@ -1,8 +1,8 @@
 <template>
   <div 
     class="shift-pill"
-    :class="timeOfDayClass"
-    :title="`${formatShiftTime(shift.startTime)} - ${formatShiftTime(shift.endTime)}`"
+    :class="[timeOfDayClass, { 'is-holiday': shift.isHoliday }]"
+    :title="`${formatShiftTime(shift.startTime)} - ${formatShiftTime(shift.endTime)}${shift.isHoliday ? ' (Holiday)' : ''}`"
   >
     <span class="shift-pill__time" @click.stop="$emit('edit')">
       <span class="material-icons-round">schedule</span>
@@ -25,6 +25,7 @@ import { computed } from 'vue';
 interface ShiftTime {
   startTime: string;
   endTime: string;
+  isHoliday?: boolean;
 }
 
 interface Shift extends ShiftTime {
@@ -47,6 +48,10 @@ const formatShiftTime = (time: string) => {
 };
 
 const timeOfDayClass = computed(() => {
+  if (props.shift.isHoliday) {
+    return 'is-holiday';
+  }
+
   const hour = parseInt(props.shift.startTime.split(':')[0]);
   
   if (hour >= 5 && hour < 12) {
@@ -118,6 +123,23 @@ const timeOfDayClass = computed(() => {
       color: darken($night, 35%);
       .material-icons-round {
         color: darken($night, 35%);
+      }
+    }
+  }
+
+  &.is-holiday {
+    background-color: rgba($holiday, 0.2);
+    border-color: rgba($holiday, 0.3);
+    .shift-pill__time {
+      color: darken($holiday, 20%);
+      .material-icons-round {
+        color: darken($holiday, 20%);
+      }
+      &:hover {
+        color: darken($holiday, 35%);
+        .material-icons-round {
+          color: darken($holiday, 35%);
+        }
       }
     }
   }

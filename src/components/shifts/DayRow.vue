@@ -64,6 +64,7 @@
           @cancel="cancelEdit"
           @apply="applyShift"
           @apply-and-copy="applyAndAddMore"
+          @toggle-holiday="toggleHoliday"
         />
       </div>
     </Transition>
@@ -79,6 +80,7 @@ import ShiftPill from './ShiftPill.vue';
 interface ShiftTime {
   startTime: string;
   endTime: string;
+  isHoliday?: boolean;
 }
 
 interface Shift extends ShiftTime {
@@ -105,7 +107,8 @@ const isEditing = ref(false);
 const editingShiftId = ref<number | null>(null);
 const currentShift = ref<ShiftTime>({
   startTime: '',
-  endTime: ''
+  endTime: '',
+  isHoliday: false
 });
 
 const formattedWeekday = computed(() => format(props.date, 'EEE'));
@@ -183,7 +186,8 @@ const applyShift = () => {
   const newShift: Shift = {
     id: Date.now(),
     startTime: currentShift.value.startTime,
-    endTime: currentShift.value.endTime
+    endTime: currentShift.value.endTime,
+    isHoliday: currentShift.value.isHoliday
   };
   
   emit('update-shifts', [...props.shifts, newShift]);
@@ -197,7 +201,8 @@ const applyAndAddMore = () => {
   const newShift: Shift = {
     id: Date.now(),
     startTime: currentShift.value.startTime,
-    endTime: currentShift.value.endTime
+    endTime: currentShift.value.endTime,
+    isHoliday: currentShift.value.isHoliday
   };
   
   emit('update-shifts', [...props.shifts, newShift]);
@@ -215,7 +220,8 @@ const applyClipboardShift = () => {
   const newShift: Shift = {
     id: Date.now(),
     startTime: props.clipboardShift.startTime,
-    endTime: props.clipboardShift.endTime
+    endTime: props.clipboardShift.endTime,
+    isHoliday: props.clipboardShift.isHoliday
   };
   
   emit('update-shifts', [...props.shifts, newShift]);
@@ -229,7 +235,8 @@ const updateShift = () => {
       ? { 
           ...shift, 
           startTime: currentShift.value.startTime,
-          endTime: currentShift.value.endTime
+          endTime: currentShift.value.endTime,
+          isHoliday: currentShift.value.isHoliday
         } 
       : shift
   );
@@ -250,7 +257,8 @@ const editShift = (shift: Shift) => {
   editingShiftId.value = shift.id;
   currentShift.value = { 
     startTime: shift.startTime,
-    endTime: shift.endTime
+    endTime: shift.endTime,
+    isHoliday: shift.isHoliday
   };
   emit('clear-clipboard');
   emit('expand');
@@ -261,8 +269,12 @@ const cancelEdit = () => {
   emit('expand');
 };
 
+const toggleHoliday = () => {
+  currentShift.value.isHoliday = !currentShift.value.isHoliday;
+};
+
 const resetForm = () => {
-  currentShift.value = { startTime: '', endTime: '' };
+  currentShift.value = { startTime: '', endTime: '', isHoliday: false };
   isEditing.value = false;
   editingShiftId.value = null;
 };
@@ -418,13 +430,7 @@ const resetForm = () => {
   }
 
   &__content {
-    padding: $spacing-lg;
     border-top: 1px solid $border;
-    background-color: rgba($background, 0.5);
-
-    @media (max-width: $breakpoint-sm) {
-      padding: $spacing-md;
-    }
   }
 }
 
@@ -439,5 +445,11 @@ const resetForm = () => {
 .slide-leave-to {
   max-height: 0;
   opacity: 0;
+}
+
+.hide-sm {
+  @media (max-width: $breakpoint-sm) {
+    display: none;
+  }
 }
 </style>

@@ -28,6 +28,15 @@
             :class="{ 'has-error': props.hasOverlap }"
           >
         </div>
+        <button 
+          v-if="!props.isEditing"
+          class="btn btn-holiday btn-icon" 
+          :class="{ 'is-active': props.shift.isHoliday }"
+          @click="applyAsHoliday"
+          :disabled="props.disabled || !isValid || props.hasOverlap"
+        >
+          <span class="material-icons-round">beach_access</span>
+        </button>
       </div>
       
       <div class="shift-editor__actions">
@@ -91,6 +100,7 @@ import { computed } from 'vue';
 interface ShiftTime {
   startTime: string;
   endTime: string;
+  isHoliday?: boolean;
 }
 
 const props = defineProps<{
@@ -101,12 +111,13 @@ const props = defineProps<{
   warning: string;
 }>();
 
-defineEmits<{
+const emit = defineEmits<{
   (e: 'update'): void;
   (e: 'delete'): void;
   (e: 'cancel'): void;
   (e: 'apply'): void;
   (e: 'apply-and-copy'): void;
+  (e: 'toggle-holiday'): void;
 }>();
 
 const isValid = computed(() => {
@@ -124,6 +135,12 @@ const isValid = computed(() => {
   
   return adjustedEndMinutes - startTotalMinutes <= 24 * 60;
 });
+
+const applyAsHoliday = () => {
+  if (!isValid.value || props.hasOverlap || props.disabled) return;
+  props.shift.isHoliday = true;
+  emit('apply');
+};
 </script>
 
 <style lang="scss" scoped>
@@ -148,10 +165,16 @@ const isValid = computed(() => {
     gap: $spacing-md;
     flex: 1;
     min-width: 0;
+    align-items: flex-end;
 
     @media (max-width: $breakpoint-sm) {
       flex-direction: column;
       width: 100%;
+      align-items: stretch;
+
+      .btn-holiday {
+        margin-top: $spacing-xs;
+      }
     }
 
     .form-group {
@@ -340,6 +363,29 @@ const isValid = computed(() => {
   }
 
   &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.btn-holiday {
+  background: rgba($holiday, 0.25);
+  color: $holiday;
+  border: none;
+
+  &:hover:not(:disabled) {
+    background: rgba($holiday, 0.3);
+    transform: translateY(-1px);
+  }
+
+  &:active:not(:disabled),
+  &.is-active:not(:disabled) {
+    background: rgba($holiday, 0.4);
+    color: darken($holiday, 5%);
     transform: translateY(0);
   }
 

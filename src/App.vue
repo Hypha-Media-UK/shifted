@@ -59,6 +59,7 @@ import YearView from './components/shifts/YearView.vue';
 interface ShiftTime {
   startTime: string;
   endTime: string;
+  isHoliday?: boolean;
 }
 
 interface Shift extends ShiftTime {

@@ -36,6 +36,7 @@ import {
 interface ShiftTime {
   startTime: string;
   endTime: string;
+  isHoliday?: boolean;
 }
 
 interface Shift extends ShiftTime {
@@ -80,8 +81,12 @@ const daysInMonth = computed(() => {
   });
 });
 
-const getTimeOfDay = (time: string) => {
-  const hour = parseInt(time.split(':')[0]);
+const getTimeOfDay = (shift: ShiftTime) => {
+  if (shift.isHoliday) {
+    return 'holiday';
+  }
+
+  const hour = parseInt(shift.startTime.split(':')[0]);
   
   if (hour >= 5 && hour < 12) {
     return 'morning';
@@ -99,20 +104,22 @@ const getDayStyle = (day: Day) => {
 
   // Get the first shift's time period to determine the color
   const firstShift = day.shifts[0];
-  const timeOfDay = getTimeOfDay(firstShift.startTime);
+  const timeOfDay = getTimeOfDay(firstShift);
   
   const colors = {
     morning: 'var(--morning-color)',
     afternoon: 'var(--afternoon-color)',
     evening: 'var(--evening-color)',
-    night: 'var(--night-color)'
+    night: 'var(--night-color)',
+    holiday: 'var(--holiday-color)'
   };
 
   const borderColors = {
     morning: 'var(--morning-border)',
     afternoon: 'var(--afternoon-border)',
     evening: 'var(--evening-border)',
-    night: 'var(--night-border)'
+    night: 'var(--night-border)',
+    holiday: 'var(--holiday-border)'
   };
 
   return {
@@ -161,10 +168,12 @@ const handleDayClick = (day: Day) => {
     --afternoon-color: #{rgba($afternoon, 0.15)};
     --evening-color: #{rgba($evening, 0.15)};
     --night-color: #{rgba($night, 0.15)};
+    --holiday-color: #{rgba($holiday, 0.15)};
     --morning-border: #{rgba($morning, 0.4)};
     --afternoon-border: #{rgba($afternoon, 0.4)};
     --evening-border: #{rgba($evening, 0.4)};
     --night-border: #{rgba($night, 0.4)};
+    --holiday-border: #{rgba($holiday, 0.4)};
     --shift-color: transparent;
     --shift-border: transparent;
 
