@@ -71,6 +71,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'update-shifts', shifts: ShiftMap): void;
+  (e: 'clear-selected-date'): void;
 }>();
 
 const currentMonth = ref(props.selectedDate || new Date());
@@ -143,6 +144,10 @@ const clearClipboardShift = () => {
 const handleExpand = (date: Date) => {
   const dateString = startOfDay(date).toISOString();
   expandedDate.value = expandedDate.value === dateString ? null : dateString;
+  // Clear selected date when expanding any day
+  if (props.selectedDate) {
+    emit('clear-selected-date');
+  }
 };
 
 const nextMonth = () => {

@@ -38,6 +38,7 @@
             :selected-date="selectedDate"
             :initial-shifts="shifts"
             @update-shifts="updateShifts"
+            @clear-selected-date="clearSelectedDate"
           />
           <YearView
             v-else
@@ -127,6 +128,10 @@ const updateShifts = (newShifts: ShiftMap) => {
 const handleDateSelect = (date: Date) => {
   selectedDate.value = date;
   currentView.value = 'month';
+};
+
+const clearSelectedDate = () => {
+  selectedDate.value = undefined;
 };
 
 const switchToMonth = () => {
