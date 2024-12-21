@@ -9,7 +9,7 @@
         :class="{
           'is-empty': !day.inMonth,
           'has-shifts': day.shifts.length > 0,
-          'is-clickable': day.inMonth && day.shifts.length > 0
+          'is-clickable': day.inMonth
         }"
         :style="getDayStyle(day)"
         @click="handleDayClick(day)"
@@ -129,7 +129,7 @@ const getDayStyle = (day: Day) => {
 };
 
 const handleDayClick = (day: Day) => {
-  if (day.inMonth && day.shifts.length > 0) {
+  if (day.inMonth) {
     emit('select-date', new Date(day.date));
   }
 };
@@ -201,7 +201,16 @@ const handleDayClick = (day: Day) => {
     &.is-clickable {
       cursor: pointer;
 
-      &:hover {
+      &:not(.has-shifts) {
+        &:hover {
+          background-color: rgba($primary, 0.05);
+          border-color: rgba($primary, 0.1);
+          transform: scale(1.05);
+          box-shadow: $shadow-sm;
+        }
+      }
+
+      &.has-shifts:hover {
         transform: scale(1.05);
         box-shadow: $shadow-sm;
         background-color: var(--shift-color);
