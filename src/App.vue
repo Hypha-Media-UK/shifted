@@ -2,28 +2,45 @@
   <div class="app">
     <header class="app__header">
       <div class="container">
-        <h1>
-          <span class="material-icons-round">calendar_today</span>
-          Shift Tracker
-        </h1>
-        <div class="view-toggle">
-          <div class="view-toggle__container">
-            <button 
-              type="button"
-              class="view-toggle__btn"
-              :class="{ active: currentView === 'month' }"
-              @click="switchToMonth"
-            >
-              Month View
-            </button>
-            <button 
-              type="button"
-              class="view-toggle__btn"
-              :class="{ active: currentView === 'year' }"
-              @click="currentView = 'year'"
-            >
-              Year View
-            </button>
+        <div class="app__header-content">
+          <h1>
+            <span class="material-icons-round">calendar_today</span>
+            Shift Tracker
+          </h1>
+          
+          <div class="app__header-controls">
+            <div class="view-toggle">
+              <div class="view-toggle__container">
+                <button 
+                  type="button"
+                  class="view-toggle__btn"
+                  :class="{ active: currentView === 'month' }"
+                  @click="switchToMonth"
+                >
+                  Month View
+                </button>
+                <button 
+                  type="button"
+                  class="view-toggle__btn"
+                  :class="{ active: currentView === 'year' }"
+                  @click="currentView = 'year'"
+                >
+                  Year View
+                </button>
+              </div>
+            </div>
+
+            <div class="date-navigation">
+              <button class="btn btn-icon" @click="navigateBack">
+                <span class="material-icons-round">chevron_left</span>
+              </button>
+              <h2 class="date-navigation__title">
+                {{ currentView === 'month' ? formattedMonth : currentYear }}
+              </h2>
+              <button class="btn btn-icon" @click="navigateForward">
+                <span class="material-icons-round">chevron_right</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -37,6 +54,7 @@
             :accent-color="accentColor"
             :selected-date="selectedDate"
             :initial-shifts="shifts"
+            :current-date="currentDate"
             @update-shifts="updateShifts"
             @clear-selected-date="clearSelectedDate"
           />
@@ -44,6 +62,7 @@
             v-else
             :shifts="shifts"
             :accent-color="accentColor"
+            :current-date="currentDate"
             @select-date="handleDateSelect"
           />
         </Transition>
@@ -53,7 +72,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
+import { format, addMonths, subMonths, addYears, subYears } from 'date-fns';
 import MonthView from './components/shifts/MonthView.vue';
 import YearView from './components/shifts/YearView.vue';
 
@@ -79,6 +99,11 @@ const accentColor = '#7c3aed';
 const currentView = ref<'month' | 'year'>('month');
 const shifts = ref<ShiftMap>({});
 const selectedDate = ref<Date | undefined>();
+const currentDate = ref(new Date());
+
+// Computed
+const currentYear = computed(() => currentDate.value.getFullYear());
+const formattedMonth = computed(() => format(currentDate.value, 'MMMM yyyy'));
 
 // Load data from localStorage
 const loadData = () => {
@@ -95,6 +120,10 @@ const loadData = () => {
       if (parsedData.currentView) {
         currentView.value = parsedData.currentView;
       }
+
+      if (parsedData.currentDate) {
+        currentDate.value = new Date(parsedData.currentDate);
+      }
     }
   } catch (error) {
     console.error('Error loading data from localStorage:', error);
@@ -107,7 +136,8 @@ const saveData = () => {
     const dataToSave = {
       shifts: shifts.value,
       selectedDate: selectedDate.value?.toISOString(),
-      currentView: currentView.value
+      currentView: currentView.value,
+      currentDate: currentDate.value.toISOString()
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
   } catch (error) {
@@ -116,7 +146,7 @@ const saveData = () => {
 };
 
 // Watch for changes in state and save to localStorage
-watch([shifts, selectedDate, currentView], () => {
+watch([shifts, selectedDate, currentView, currentDate], () => {
   saveData();
 }, { deep: true });
 
@@ -128,6 +158,7 @@ const updateShifts = (newShifts: ShiftMap) => {
 const handleDateSelect = (date: Date) => {
   selectedDate.value = date;
   currentView.value = 'month';
+  currentDate.value = date;
 };
 
 const clearSelectedDate = () => {
@@ -137,6 +168,22 @@ const clearSelectedDate = () => {
 const switchToMonth = () => {
   selectedDate.value = undefined;
   currentView.value = 'month';
+};
+
+const navigateBack = () => {
+  if (currentView.value === 'month') {
+    currentDate.value = subMonths(currentDate.value, 1);
+  } else {
+    currentDate.value = subYears(currentDate.value, 1);
+  }
+};
+
+const navigateForward = () => {
+  if (currentView.value === 'month') {
+    currentDate.value = addMonths(currentDate.value, 1);
+  } else {
+    currentDate.value = addYears(currentDate.value, 1);
+  }
 };
 
 // Load data when component is mounted
@@ -178,6 +225,19 @@ onMounted(() => {
         align-items: stretch;
       }
     }
+  }
+
+  &__header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-lg;
+    width: 100%;
+
+    @media (max-width: $breakpoint-sm) {
+      flex-direction: column;
+      gap: $spacing-md;
+    }
 
     h1 {
       font-size: $font-size-xl;
@@ -187,6 +247,7 @@ onMounted(() => {
       display: flex;
       align-items: center;
       gap: $spacing-sm;
+      white-space: nowrap;
 
       .material-icons-round {
         font-size: 1.75rem;
@@ -196,6 +257,19 @@ onMounted(() => {
         justify-content: center;
         margin-bottom: $spacing-sm;
       }
+    }
+  }
+
+  &__header-controls {
+    display: flex;
+    align-items: center;
+    gap: $spacing-lg;
+    flex: 1;
+    justify-content: flex-end;
+
+    @media (max-width: $breakpoint-sm) {
+      flex-direction: column;
+      gap: $spacing-md;
     }
   }
 
@@ -211,6 +285,57 @@ onMounted(() => {
       @media (max-width: $breakpoint-sm) {
         padding: 0 $spacing-sm;
       }
+    }
+  }
+}
+
+.date-navigation {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  background: rgba(white, 0.1);
+  padding: $spacing-xs;
+  border-radius: $border-radius;
+
+  @media (max-width: $breakpoint-sm) {
+    width: 100%;
+    justify-content: center;
+  }
+
+  &__title {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+    margin: 0;
+    color: white;
+    min-width: 180px;
+    text-align: center;
+
+    @media (max-width: $breakpoint-sm) {
+      font-size: $font-size-base;
+      min-width: 140px;
+    }
+  }
+
+  .btn-icon {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: rgba(white, 0.8);
+    cursor: pointer;
+    transition: all $transition-speed ease;
+
+    &:hover {
+      color: white;
+      background: rgba(white, 0.1);
+    }
+
+    .material-icons-round {
+      font-size: 1.25rem;
     }
   }
 }
