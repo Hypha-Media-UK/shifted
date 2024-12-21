@@ -191,7 +191,6 @@ const applyShift = () => {
   };
   
   emit('update-shifts', [...props.shifts, newShift]);
-  emit('clear-clipboard'); // Clear clipboard when applying a single shift
   resetForm();
   emit('expand');
 };
