@@ -48,6 +48,10 @@
 
     <main class="app__main">
       <div class="container">
+        <div class="app__title">
+          <h2>{{ currentView === 'month' ? formattedMonth : currentYear }}</h2>
+        </div>
+
         <Transition name="fade-scale" mode="out-in">
           <MonthView
             v-if="currentView === 'month'"
@@ -285,6 +289,24 @@ onMounted(() => {
       @media (max-width: $breakpoint-sm) {
         padding: 0 $spacing-sm;
       }
+    }
+  }
+
+  &__title {
+    margin-bottom: $spacing-lg;
+    padding: 0 $spacing-md;
+    text-align: center;
+
+    @media (max-width: $breakpoint-sm) {
+      margin-bottom: $spacing-md;
+      padding: 0 $spacing-sm;
+    }
+
+    h2 {
+      font-size: $font-size-xl;
+      font-weight: $font-weight-bold;
+      color: $text;
+      margin: 0;
     }
   }
 }
