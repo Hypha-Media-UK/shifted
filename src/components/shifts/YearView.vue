@@ -1,12 +1,17 @@
 <template>
   <div class="year-view">
-    <div class="year-view__months">
+    <div class="year-view__months" ref="monthsContainer">
       <MonthGrid
         v-for="month in months"
         :key="month.toISOString()"
         :month="month"
         :shifts="shifts"
         :accent-color="accentColor"
+        :ref="(el) => {
+          if (isSameMonth(month, currentDate)) {
+            currentMonthRef = el;
+          }
+        }"
         @select-date="$emit('select-date', $event)"
       />
     </div>
@@ -14,8 +19,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { eachMonthOfInterval, startOfYear, endOfYear } from 'date-fns';
+import { computed, ref, onMounted, nextTick } from 'vue';
+import { eachMonthOfInterval, startOfYear, endOfYear, isSameMonth } from 'date-fns';
 import MonthGrid from './MonthGrid.vue';
 
 interface ShiftTime {
@@ -42,10 +47,24 @@ defineEmits<{
   (e: 'select-date', date: Date): void;
 }>();
 
+const monthsContainer = ref<HTMLElement | null>(null);
+const currentMonthRef = ref<any>(null);
+
 const months = computed(() => {
   const start = startOfYear(props.currentDate);
   const end = endOfYear(props.currentDate);
   return eachMonthOfInterval({ start, end });
+});
+
+onMounted(async () => {
+  await nextTick();
+  if (currentMonthRef.value?.$el) {
+    currentMonthRef.value.$el.scrollIntoView({ 
+      behavior: 'smooth', 
+      block: 'center',
+      inline: 'center'
+    });
+  }
 });
 </script>
 
@@ -58,6 +77,7 @@ const months = computed(() => {
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: $spacing-lg;
     padding: $spacing-md;
+    scroll-behavior: smooth;
     
     @media (max-width: $breakpoint-sm) {
       gap: $spacing-md;
