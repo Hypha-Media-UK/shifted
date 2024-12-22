@@ -1,5 +1,6 @@
 <template>
-  <div class="app">
+  <Login v-if="!currentUser" @login="handleLogin" />
+  <div v-else class="app">
     <header class="app__header">
       <div class="container">
         <div class="app__header-content">
@@ -41,6 +42,13 @@
                 <span class="material-icons-round">chevron_right</span>
               </button>
             </div>
+
+            <div class="user-controls">
+              <span class="user-name">{{ currentUser }}</span>
+              <button class="btn btn-icon" @click="handleLogout" title="Logout">
+                <span class="material-icons-round">logout</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -80,6 +88,7 @@ import { ref, onMounted, watch, computed } from 'vue';
 import { format, addMonths, subMonths, addYears, subYears } from 'date-fns';
 import MonthView from './components/shifts/MonthView.vue';
 import YearView from './components/shifts/YearView.vue';
+import Login from './components/auth/Login.vue';
 
 interface ShiftTime {
   startTime: string;
@@ -104,15 +113,26 @@ const currentView = ref<'month' | 'year'>('month');
 const shifts = ref<ShiftMap>({});
 const selectedDate = ref<Date | undefined>();
 const currentDate = ref(new Date());
+const currentUser = ref<string | null>(null);
 
 // Computed
 const currentYear = computed(() => currentDate.value.getFullYear());
 const formattedMonth = computed(() => format(currentDate.value, 'MMMM yyyy'));
 
+// Load user from localStorage
+const loadUser = () => {
+  const savedUser = localStorage.getItem('shift-tracker-user');
+  if (savedUser) {
+    currentUser.value = savedUser;
+  }
+};
+
 // Load data from localStorage
 const loadData = () => {
+  if (!currentUser.value) return;
+  
   try {
-    const savedData = localStorage.getItem(STORAGE_KEY);
+    const savedData = localStorage.getItem(`${STORAGE_KEY}-${currentUser.value}`);
     if (savedData) {
       const parsedData = JSON.parse(savedData);
       shifts.value = parsedData.shifts || {};
@@ -136,6 +156,8 @@ const loadData = () => {
 
 // Save data to localStorage
 const saveData = () => {
+  if (!currentUser.value) return;
+
   try {
     const dataToSave = {
       shifts: shifts.value,
@@ -143,7 +165,7 @@ const saveData = () => {
       currentView: currentView.value,
       currentDate: currentDate.value.toISOString()
     };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+    localStorage.setItem(`${STORAGE_KEY}-${currentUser.value}`, JSON.stringify(dataToSave));
   } catch (error) {
     console.error('Error saving data to localStorage:', error);
   }
@@ -190,9 +212,30 @@ const navigateForward = () => {
   }
 };
 
-// Load data when component is mounted
-onMounted(() => {
+// Handle login
+const handleLogin = (username: string) => {
+  currentUser.value = username;
+  localStorage.setItem('shift-tracker-user', username);
   loadData();
+};
+
+// Handle logout
+const handleLogout = () => {
+  saveData(); // Save current user's data before logging out
+  currentUser.value = null;
+  localStorage.removeItem('shift-tracker-user');
+  shifts.value = {};
+  selectedDate.value = undefined;
+  currentView.value = 'month';
+  currentDate.value = new Date();
+};
+
+// Load user and data when component is mounted
+onMounted(() => {
+  loadUser();
+  if (currentUser.value) {
+    loadData();
+  }
 });
 </script>
 
@@ -307,6 +350,44 @@ onMounted(() => {
       font-weight: $font-weight-bold;
       color: $text;
       margin: 0;
+    }
+  }
+}
+
+.user-controls {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  background: rgba(white, 0.1);
+  padding: $spacing-xs $spacing-sm;
+  border-radius: $border-radius;
+
+  .user-name {
+    color: white;
+    font-weight: $font-weight-medium;
+    font-size: $font-size-sm;
+  }
+
+  .btn-icon {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: rgba(white, 0.8);
+    cursor: pointer;
+    transition: all $transition-speed ease;
+
+    &:hover {
+      color: white;
+      background: rgba(white, 0.1);
+    }
+
+    .material-icons-round {
+      font-size: 1.25rem;
     }
   }
 }
