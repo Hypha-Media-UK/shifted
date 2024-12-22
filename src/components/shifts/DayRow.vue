@@ -47,7 +47,6 @@
             :title="getAddButtonTitle"
           >
             <span class="material-icons-round">content_paste</span>
-            <span class="hide-sm">Add</span>
           </button>
         </div>
       </div>
