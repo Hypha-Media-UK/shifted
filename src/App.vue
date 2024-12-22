@@ -4,10 +4,19 @@
     <header class="app__header">
       <div class="container">
         <div class="app__header-content">
-          <h1>
-            <span class="material-icons-round">calendar_today</span>
-            Shift Tracker
-          </h1>
+          <div class="app__header-top">
+            <h1>
+              <span class="material-icons-round">calendar_today</span>
+              Shifted
+            </h1>
+
+            <div class="user-controls">
+              <span class="user-name">{{ currentUser }}</span>
+              <button class="btn btn-icon" @click="handleLogout" title="Logout">
+                <span class="material-icons-round">logout</span>
+              </button>
+            </div>
+          </div>
           
           <div class="app__header-controls">
             <div class="view-toggle">
@@ -18,7 +27,7 @@
                   :class="{ active: currentView === 'month' }"
                   @click="switchToMonth"
                 >
-                  Month View
+                  Month
                 </button>
                 <button 
                   type="button"
@@ -26,7 +35,7 @@
                   :class="{ active: currentView === 'year' }"
                   @click="currentView = 'year'"
                 >
-                  Year View
+                  Year
                 </button>
               </div>
             </div>
@@ -40,13 +49,6 @@
               </h2>
               <button class="btn btn-icon" @click="navigateForward">
                 <span class="material-icons-round">chevron_right</span>
-              </button>
-            </div>
-
-            <div class="user-controls">
-              <span class="user-name">{{ currentUser }}</span>
-              <button class="btn btn-icon" @click="handleLogout" title="Logout">
-                <span class="material-icons-round">logout</span>
               </button>
             </div>
           </div>
@@ -117,7 +119,7 @@ const currentUser = ref<string | null>(null);
 
 // Computed
 const currentYear = computed(() => currentDate.value.getFullYear());
-const formattedMonth = computed(() => format(currentDate.value, 'MMMM yyyy'));
+const formattedMonth = computed(() => format(currentDate.value, 'MMM yyyy'));
 
 // Load user from localStorage
 const loadUser = () => {
@@ -266,25 +268,15 @@ onMounted(() => {
       align-items: center;
       justify-content: space-between;
       gap: $spacing-md;
-
-      @media (max-width: $breakpoint-sm) {
-        flex-direction: column;
-        align-items: stretch;
-      }
     }
   }
 
   &__header-content {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: $spacing-lg;
+    flex-direction: column;
+    gap: $spacing-md;
     width: 100%;
-
-    @media (max-width: $breakpoint-sm) {
-      flex-direction: column;
-      gap: $spacing-md;
-    }
+    position: relative;
 
     h1 {
       font-size: $font-size-xl;
@@ -301,22 +293,27 @@ onMounted(() => {
       }
 
       @media (max-width: $breakpoint-sm) {
-        justify-content: center;
-        margin-bottom: $spacing-sm;
+        font-size: $font-size-lg;
       }
     }
+  }
+
+  &__header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: $spacing-md;
   }
 
   &__header-controls {
     display: flex;
     align-items: center;
-    gap: $spacing-lg;
-    flex: 1;
-    justify-content: flex-end;
+    gap: $spacing-md;
+    justify-content: space-between;
 
     @media (max-width: $breakpoint-sm) {
-      flex-direction: column;
-      gap: $spacing-md;
+      flex-direction: row;
+      gap: $spacing-sm;
     }
   }
 
@@ -359,8 +356,12 @@ onMounted(() => {
   align-items: center;
   gap: $spacing-sm;
   background: rgba(white, 0.1);
-  padding: $spacing-xs $spacing-sm;
+  padding: $spacing-xs $spacing-lg;
   border-radius: $border-radius;
+
+  @media (max-width: $breakpoint-sm) {
+    padding: $spacing-xs $spacing-md;
+  }
 
   .user-name {
     color: white;
@@ -401,7 +402,7 @@ onMounted(() => {
   border-radius: $border-radius;
 
   @media (max-width: $breakpoint-sm) {
-    width: 100%;
+    flex: 1;
     justify-content: center;
   }
 
@@ -410,12 +411,12 @@ onMounted(() => {
     font-weight: $font-weight-bold;
     margin: 0;
     color: white;
-    min-width: 180px;
+    min-width: 100px;
     text-align: center;
 
     @media (max-width: $breakpoint-sm) {
       font-size: $font-size-base;
-      min-width: 140px;
+      min-width: 90px;
     }
   }
 
@@ -445,10 +446,12 @@ onMounted(() => {
 
 .view-toggle {
   position: relative;
-  width: 300px;
+  width: 180px;
 
   @media (max-width: $breakpoint-sm) {
-    width: 100%;
+    width: auto;
+    flex: 1;
+    min-width: 0;
   }
 
   &__container {

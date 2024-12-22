@@ -148,6 +148,9 @@ const applyAsHoliday = () => {
 .shift-editor {
   background-color: rgba(white, 0.5);
   backdrop-filter: blur(8px);
+  animation: slide-up 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-origin: top;
+  will-change: transform, opacity;
 
   &__container {
     display: flex;
@@ -211,45 +214,17 @@ const applyAsHoliday = () => {
     display: flex;
     gap: $spacing-sm;
     align-items: center;
+    justify-content: flex-end;
 
     @media (max-width: $breakpoint-sm) {
       width: 100%;
-      justify-content: flex-end;
-      gap: $spacing-sm;
     }
   }
 
   &__action-pair {
     display: flex;
     gap: $spacing-sm;
-    width: 100%;
-    justify-content: flex-end;
-
-    .btn-icon {
-      width: 42px;
-      height: 42px;
-      padding: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      @media (max-width: $breakpoint-sm) {
-        width: 46px;
-        height: 46px;
-
-        .material-icons-round {
-          font-size: 1.3rem;
-        }
-      }
-
-      &.btn-wide {
-        width: 84px;
-        
-        @media (max-width: $breakpoint-sm) {
-          width: 92px;
-        }
-      }
-    }
+    align-items: center;
   }
 }
 
@@ -277,14 +252,14 @@ const applyAsHoliday = () => {
   width: 100%;
   padding: $spacing-sm $spacing-md;
   border: 1px solid rgba($border, 0.8);
-  border-radius: 10px;
+  border-radius: 12px;
   font-size: $font-size-base;
   font-family: $font-family-base;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   background-color: rgba(white, 0.8);
   color: $text;
   appearance: none;
-  height: 42px;
+  height: 46px;
   letter-spacing: 0.01em;
   -webkit-tap-highlight-color: transparent;
   
@@ -338,14 +313,6 @@ const applyAsHoliday = () => {
       
       .material-icons-round {
         font-size: 1.3rem;
-      }
-    }
-
-    &.btn-wide {
-      width: 84px;
-
-      @media (max-width: $breakpoint-sm) {
-        width: 92px;
       }
     }
 
@@ -465,5 +432,19 @@ const applyAsHoliday = () => {
 .fade-leave-to {
   opacity: 0;
   transform: translateY(-4px);
+}
+
+@keyframes slide-up {
+  0% {
+    opacity: 0;
+    transform: scale(0.98) translateY(-8px);
+  }
+  60% {
+    transform: scale(1.01) translateY(1px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 </style>
