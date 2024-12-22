@@ -33,19 +33,9 @@
       <div class="shift-editor__actions">
         <template v-if="props.isEditing">
           <div class="shift-editor__action-group">
-            <button class="btn btn-secondary btn-icon" @click="$emit('cancel')">
-              <span class="material-icons-round">close</span>
-            </button>
             <div class="shift-editor__action-pair">
               <button class="btn btn-danger btn-icon" @click="$emit('delete')">
                 <span class="material-icons-round">delete</span>
-              </button>
-              <button 
-                class="btn btn-success btn-icon" 
-                @click="$emit('update')"
-                :disabled="!isValid || props.hasOverlap"
-              >
-                <span class="material-icons-round">check</span>
               </button>
               <button 
                 class="btn btn-primary btn-icon" 
@@ -54,14 +44,21 @@
               >
                 <span class="material-icons-round">content_copy</span>
               </button>
+              <button 
+                class="btn btn-success btn-icon" 
+                @click="$emit('update')"
+                :disabled="!isValid || props.hasOverlap"
+              >
+                <span class="material-icons-round">check</span>
+              </button>
+              <button class="btn btn-secondary btn-icon" @click="$emit('cancel')">
+                <span class="material-icons-round">close</span>
+              </button>
             </div>
           </div>
         </template>
         <template v-else>
           <div class="shift-editor__action-group">
-            <button class="btn btn-secondary btn-icon" @click="$emit('cancel')">
-              <span class="material-icons-round">close</span>
-            </button>
             <div class="shift-editor__action-pair">
               <button 
                 class="btn btn-holiday btn-icon" 
@@ -77,6 +74,9 @@
                 :disabled="!isValid || props.hasOverlap || props.disabled"
               >
                 <span class="material-icons-round">check</span>
+              </button>
+              <button class="btn btn-secondary btn-icon" @click="$emit('cancel')">
+                <span class="material-icons-round">close</span>
               </button>
             </div>
           </div>
@@ -213,42 +213,41 @@ const applyAsHoliday = () => {
     align-items: center;
 
     @media (max-width: $breakpoint-sm) {
-      flex-direction: column;
       width: 100%;
-
-      .btn {
-        width: 100%;
-        justify-content: center;
-      }
-
-      .shift-editor__action-pair {
-        display: flex;
-        gap: $spacing-xs;
-        width: 100%;
-        justify-content: flex-end;
-
-        .btn {
-          width: auto;
-        }
-      }
+      justify-content: flex-end;
+      gap: $spacing-sm;
     }
   }
 
   &__action-pair {
     display: flex;
-    gap: $spacing-xs;
-    margin-left: $spacing-xs;
+    gap: $spacing-sm;
+    width: 100%;
+    justify-content: flex-end;
 
     .btn-icon {
-      width: 38px;
-      height: 38px;
+      width: 42px;
+      height: 42px;
       padding: 0;
       display: flex;
       align-items: center;
       justify-content: center;
 
+      @media (max-width: $breakpoint-sm) {
+        width: 46px;
+        height: 46px;
+
+        .material-icons-round {
+          font-size: 1.3rem;
+        }
+      }
+
       &.btn-wide {
-        width: 76px;
+        width: 84px;
+        
+        @media (max-width: $breakpoint-sm) {
+          width: 92px;
+        }
       }
     }
   }
@@ -319,8 +318,8 @@ const applyAsHoliday = () => {
 
 .btn {
   &.btn-icon {
-    width: 38px;
-    height: 38px;
+    width: 42px;
+    height: 42px;
     padding: 0;
     display: flex;
     align-items: center;
@@ -333,12 +332,21 @@ const applyAsHoliday = () => {
     -webkit-tap-highlight-color: transparent;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 
-    .material-icons-round {
-      font-size: 1.2rem;
+    @media (max-width: $breakpoint-sm) {
+      width: 46px;
+      height: 46px;
+      
+      .material-icons-round {
+        font-size: 1.3rem;
+      }
     }
 
     &.btn-wide {
-      width: 76px;
+      width: 84px;
+
+      @media (max-width: $breakpoint-sm) {
+        width: 92px;
+      }
     }
 
     &:active:not(:disabled) {
