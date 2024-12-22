@@ -91,7 +91,12 @@ watch(() => props.selectedDate, async (newDate) => {
 // Watch for initialShifts changes
 watch(() => props.initialShifts, (newShifts) => {
   if (newShifts) {
-    shifts.value = newShifts;
+    // Create new objects for all shifts to ensure reactivity
+    const processedShifts: ShiftMap = {};
+    Object.entries(newShifts).forEach(([date, dateShifts]) => {
+      processedShifts[date] = dateShifts.map(shift => ({...shift}));
+    });
+    shifts.value = processedShifts;
   }
 }, { immediate: true });
 
@@ -108,9 +113,11 @@ const getShiftsForDate = (date: Date): Shift[] => {
 
 const updateShiftsForDate = (date: Date, newShifts: Shift[]) => {
   const dateKey = format(date, 'yyyy-MM-dd');
+  // Create a new object for each shift to ensure reactivity
+  const processedShifts = newShifts.map(shift => ({...shift}));
   const updatedShifts = {
     ...shifts.value,
-    [dateKey]: newShifts
+    [dateKey]: processedShifts
   };
   shifts.value = updatedShifts;
   emit('update-shifts', updatedShifts);

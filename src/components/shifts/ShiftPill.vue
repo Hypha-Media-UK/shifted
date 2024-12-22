@@ -1,7 +1,14 @@
 <template>
   <div 
     class="shift-pill"
-    :class="[timeOfDayClass, { 'is-holiday': shift.isHoliday, 'is-past': isPast }]"
+    :class="{
+      'is-holiday': shift.isHoliday,
+      'is-past': isPast,
+      'is-morning': !shift.isHoliday && timeOfDayClass === 'is-morning',
+      'is-afternoon': !shift.isHoliday && timeOfDayClass === 'is-afternoon',
+      'is-evening': !shift.isHoliday && timeOfDayClass === 'is-evening',
+      'is-night': !shift.isHoliday && timeOfDayClass === 'is-night'
+    }"
     :title="`${formatShiftTime(shift.startTime)} - ${formatShiftTime(shift.endTime)}${shift.isHoliday ? ' (Holiday)' : ''}`"
   >
     <span 
@@ -9,14 +16,14 @@
       class="shift-pill__time shift-pill__time--active" 
       @click.stop="$emit('edit')"
     >
-      <span class="material-icons-round">schedule</span>
+      <span class="material-icons-round">{{ shift.isHoliday ? 'beach_access' : 'schedule' }}</span>
       {{ formatShiftTime(shift.startTime) }} - {{ formatShiftTime(shift.endTime) }}
     </span>
     <span 
       v-else
       class="shift-pill__time shift-pill__time--past"
     >
-      <span class="material-icons-round">schedule</span>
+      <span class="material-icons-round">{{ shift.isHoliday ? 'beach_access' : 'schedule' }}</span>
       {{ formatShiftTime(shift.startTime) }} - {{ formatShiftTime(shift.endTime) }}
     </span>
     <button 
@@ -86,8 +93,11 @@ const timeOfDayClass = computed(() => {
   display: inline-flex;
   align-items: center;
   gap: $spacing-xs;
-  border: 1px solid transparent;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background-color: rgba($text, 0.05) !important;
+  border: 1px solid rgba($text, 0.1) !important;
+  box-shadow: none !important;
+  transform: translateY(0);
   overflow: hidden;
   min-width: 0;
   flex: 1;
@@ -111,80 +121,104 @@ const timeOfDayClass = computed(() => {
   }
 
   &.is-morning {
-    background-color: rgba($morning, 0.2);
-    border-color: rgba($morning, 0.3);
+    background-color: rgba($morning, 0.2) !important;
+    border-color: rgba($morning, 0.3) !important;
     .shift-pill__time--active:hover {
-      color: color.adjust($morning, $lightness: -35%);
+      color: color.adjust($morning, $lightness: -35%) !important;
       .material-icons-round {
-        color: color.adjust($morning, $lightness: -35%);
+        color: color.adjust($morning, $lightness: -35%) !important;
       }
     }
   }
 
   &.is-afternoon {
-    background-color: rgba($afternoon, 0.2);
-    border-color: rgba($afternoon, 0.3);
+    background-color: rgba($afternoon, 0.2) !important;
+    border-color: rgba($afternoon, 0.3) !important;
     .shift-pill__time--active:hover {
-      color: color.adjust($afternoon, $lightness: -35%);
+      color: color.adjust($afternoon, $lightness: -35%) !important;
       .material-icons-round {
-        color: color.adjust($afternoon, $lightness: -35%);
+        color: color.adjust($afternoon, $lightness: -35%) !important;
       }
     }
   }
 
   &.is-evening {
-    background-color: rgba($evening, 0.2);
-    border-color: rgba($evening, 0.3);
+    background-color: rgba($evening, 0.2) !important;
+    border-color: rgba($evening, 0.3) !important;
     .shift-pill__time--active:hover {
-      color: color.adjust($evening, $lightness: -35%);
+      color: color.adjust($evening, $lightness: -35%) !important;
       .material-icons-round {
-        color: color.adjust($evening, $lightness: -35%);
+        color: color.adjust($evening, $lightness: -35%) !important;
       }
     }
   }
 
   &.is-night {
-    background-color: rgba($night, 0.2);
-    border-color: rgba($night, 0.3);
+    background-color: rgba($night, 0.2) !important;
+    border-color: rgba($night, 0.3) !important;
     .shift-pill__time--active:hover {
-      color: color.adjust($night, $lightness: -35%);
+      color: color.adjust($night, $lightness: -35%) !important;
       .material-icons-round {
-        color: color.adjust($night, $lightness: -35%);
+        color: color.adjust($night, $lightness: -35%) !important;
       }
     }
   }
 
   &.is-holiday {
-    background-color: rgba($holiday, 0.25);
-    border-color: rgba($holiday, 0.4);
-    box-shadow: 0 1px 3px rgba($holiday, 0.2);
+    background-color: rgba($holiday, 0.25) !important;
+    border-color: rgba($holiday, 0.4) !important;
+    box-shadow: 0 1px 3px rgba($holiday, 0.2) !important;
+    transform: translateY(-1px) !important;
+
     .shift-pill__time--active {
-      color: $holiday;
+      color: $holiday !important;
       .material-icons-round {
-        color: $holiday;
+        color: $holiday !important;
       }
       &:hover {
-        color: darken($holiday, 10%);
+        color: darken($holiday, 10%) !important;
         .material-icons-round {
-          color: darken($holiday, 10%);
+          color: darken($holiday, 10%) !important;
+        }
+      }
+    }
+
+    &:hover {
+      box-shadow: 0 2px 4px rgba($holiday, 0.2) !important;
+    }
+
+    &:active {
+      transform: scale(0.98) !important;
+      box-shadow: 0 1px 3px rgba($holiday, 0.2) !important;
+    }
+  }
+
+  &.is-past {
+    background-color: rgba($text, 0.05) !important;
+    border-color: rgba($text, 0.1) !important;
+    box-shadow: none !important;
+
+    &.is-holiday {
+      background-color: rgba($holiday, 0.1) !important;
+      border-color: rgba($holiday, 0.2) !important;
+      transform: translateY(0) !important;
+      .shift-pill__time--past {
+        color: rgba($holiday, 0.6) !important;
+        .material-icons-round {
+          color: rgba($holiday, 0.4) !important;
         }
       }
     }
   }
 
-  &.is-past {
-    background-color: rgba($text, 0.05);
-    border-color: rgba($text, 0.1);
-  }
-
-  &:not(.is-past):hover {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  &:not(.is-past):hover:not(.is-holiday) {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
     transform: translateY(-1px);
   }
 
-  &:not(.is-past):active {
+  &:not(.is-past):active:not(.is-holiday) {
     transform: scale(0.98);
-    box-shadow: none;
+    box-shadow: none !important;
   }
 
   &__time {
@@ -192,7 +226,7 @@ const timeOfDayClass = computed(() => {
     align-items: center;
     gap: $spacing-xs;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    color: $text;
+    color: $text !important;
     font-weight: $font-weight-medium;
     white-space: nowrap;
     overflow: hidden;
@@ -201,19 +235,18 @@ const timeOfDayClass = computed(() => {
     flex: 1;
 
     &--active {
-      cursor: pointer;
 
       .material-icons-round {
-        color: $text-light;
+        color: $text-light !important;
       }
     }
 
     &--past {
       cursor: default;
-      color: rgba($text, 0.6);
+      color: rgba($text, 0.6) !important;
 
       .material-icons-round {
-        color: rgba($text, 0.4);
+        color: rgba($text, 0.4) !important;
       }
     }
 
@@ -235,8 +268,8 @@ const timeOfDayClass = computed(() => {
     min-width: 20px;
     border-radius: $border-radius-sm;
     border: none;
-    background: transparent;
-    color: $text-light;
+    background: transparent !important;
+    color: $text-light !important;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -250,8 +283,8 @@ const timeOfDayClass = computed(() => {
     }
 
     &:hover {
-      background: $danger;
-      color: white;
+      background: $danger !important;
+      color: white !important;
     }
   }
 

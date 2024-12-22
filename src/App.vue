@@ -220,8 +220,9 @@ const updateShift = () => {
   // Create new array with updated shift
   const updatedShifts = dayShifts.map(shift => {
     if (shift.id === editingShiftId.value) {
+      // Create a completely new object to ensure reactivity
       return {
-        id: shift.id,
+        ...shift,
         startTime: currentShift.value.startTime,
         endTime: currentShift.value.endTime,
         isHoliday: currentShift.value.isHoliday
@@ -233,7 +234,7 @@ const updateShift = () => {
   // Force Vue to recognize the change by creating a new object
   shifts.value = {
     ...shifts.value,
-    [dateKey]: updatedShifts
+    [dateKey]: [...updatedShifts]
   };
   
   closeShiftEditor();
@@ -283,32 +284,40 @@ const copyShift = () => {
   closeShiftEditor();
 };
 
-const toggleHoliday = () => {
-  // For existing shifts, update in the shifts map
-  if (isEditing.value && editingShiftId.value) {
-    const dateKey = format(selectedDate.value!, 'yyyy-MM-dd');
-    const dayShifts = [...shifts.value[dateKey] || []];
-    
-    // Find the shift and toggle its holiday status
-    const shiftToUpdate = dayShifts.find(shift => shift.id === editingShiftId.value);
-    if (shiftToUpdate) {
-      shiftToUpdate.isHoliday = !shiftToUpdate.isHoliday;
-      currentShift.value.isHoliday = shiftToUpdate.isHoliday;
-      
-      // Force Vue to recognize the change
-      shifts.value = {
-        ...shifts.value,
-        [dateKey]: dayShifts
-      };
-    }
-  }
-  // For new shifts, just update currentShift
-  else {
+const toggleHoliday = (updatedShift?: ShiftTime) => {
+  if (updatedShift) {
+    currentShift.value = { ...updatedShift };
+  } else {
     currentShift.value.isHoliday = !currentShift.value.isHoliday;
   }
   
-  // Close the modal
-  closeShiftEditor();
+  // For existing shifts, update immediately
+  if (isEditing.value && editingShiftId.value) {
+    const dateKey = format(selectedDate.value!, 'yyyy-MM-dd');
+    const dayShifts = shifts.value[dateKey] || [];
+    
+    // Create new array with updated shift
+    const updatedShifts = dayShifts.map(shift => {
+      if (shift.id === editingShiftId.value) {
+        return {
+          ...shift,
+          startTime: currentShift.value.startTime,
+          endTime: currentShift.value.endTime,
+          isHoliday: currentShift.value.isHoliday
+        };
+      }
+      return shift;
+    });
+    
+    // Force Vue to recognize the change
+    shifts.value = {
+      ...shifts.value,
+      [dateKey]: [...updatedShifts]
+    };
+    
+    // Close the editor after updating
+    closeShiftEditor();
+  }
 };
 
 // Computed

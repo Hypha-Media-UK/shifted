@@ -137,7 +137,7 @@ const emit = defineEmits<{
   (e: 'cancel'): void;
   (e: 'apply'): void;
   (e: 'apply-and-copy'): void;
-  (e: 'toggle-holiday'): void;
+  (e: 'toggle-holiday', shift: ShiftTime): void;
 }>();
 
 const isValid = computed(() => {
@@ -159,7 +159,7 @@ const isValid = computed(() => {
 const toggleHoliday = () => {
   shift.value.isHoliday = !shift.value.isHoliday;
   if (isEditing.value) {
-    emit('toggle-holiday');
+    emit('toggle-holiday', shift.value);
   }
 };
 </script>
