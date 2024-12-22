@@ -506,20 +506,66 @@ const resetForm = () => {
 
 // Transitions
 .slide-up-enter-active {
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: 
+    transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 0.4s cubic-bezier(0.33, 1, 0.68, 1),
+    max-height 0.6s cubic-bezier(0.33, 1, 0.68, 1);
+  transform-origin: top;
   max-height: 400px;
+  opacity: 1;
+  overflow: hidden;
+  will-change: transform, opacity, max-height;
 }
 
 .slide-up-leave-active {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: 
+    transform 0.2s cubic-bezier(0.32, 0, 0.67, 0),
+    opacity 0.15s cubic-bezier(0.32, 0, 0.67, 0),
+    max-height 0.2s cubic-bezier(0.32, 0, 0.67, 0);
+  transform-origin: top;
   max-height: 400px;
+  opacity: 1;
+  overflow: hidden;
+  will-change: transform, opacity, max-height;
 }
 
-.slide-up-enter-from,
-.slide-leave-to {
+.slide-up-enter-from {
   max-height: 0;
   opacity: 0;
-  transform: translateY(-4px);
+  transform: scale(0.97) translateY(-12px);
+}
+
+.slide-up-leave-to {
+  max-height: 0;
+  opacity: 0;
+  transform: scale(0.97) translateY(-8px);
+}
+
+// Add spring animation to the editor content
+.shift-editor {
+  animation: spring-in 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-origin: top;
+  will-change: transform, opacity;
+}
+
+@keyframes spring-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.97) translateY(-12px);
+  }
+  50% {
+    opacity: 1;
+  }
+  65% {
+    transform: scale(1.02) translateY(2px);
+  }
+  85% {
+    transform: scale(0.99) translateY(-1px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 .hide-sm {
