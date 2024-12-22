@@ -1,100 +1,102 @@
 <template>
-  <div class="shift-editor">
-    <div class="shift-editor__container">
-      <div class="shift-editor__form">
-        <div class="form-group">
-          <label class="form-label">
-            <span class="material-icons-round">schedule</span>
-            Start Time
-          </label>
-          <input 
-            type="time" 
-            class="form-control" 
-            v-model="props.shift.startTime"
-            :disabled="props.disabled"
-            :class="{ 'has-error': props.hasOverlap }"
-          >
+  <div class="shift-editor" @click.self="$emit('cancel')">
+    <div class="shift-editor__overlay" @click="$emit('cancel')"></div>
+    <div class="shift-editor__content">
+      <div class="shift-editor__container">
+        <div class="shift-editor__form">
+          <div class="form-group">
+            <label class="form-label">
+              <span class="material-icons-round">schedule</span>
+              Start Time
+            </label>
+            <input 
+              type="time" 
+              class="form-control" 
+              v-model="shift.startTime"
+              :disabled="disabled"
+              :class="{ 'has-error': hasOverlap }"
+            >
+          </div>
+          <div class="form-group">
+            <label class="form-label">
+              <span class="material-icons-round">schedule</span>
+              End Time
+            </label>
+            <input 
+              type="time" 
+              class="form-control" 
+              v-model="shift.endTime"
+              :disabled="disabled"
+              :class="{ 'has-error': hasOverlap }"
+            >
+          </div>
         </div>
-        <div class="form-group">
-          <label class="form-label">
-            <span class="material-icons-round">schedule</span>
-            End Time
-          </label>
-          <input 
-            type="time" 
-            class="form-control" 
-            v-model="props.shift.endTime"
-            :disabled="props.disabled"
-            :class="{ 'has-error': props.hasOverlap }"
-          >
-        </div>
-      </div>
       
-      <div class="shift-editor__actions">
-        <template v-if="props.isEditing">
-          <div class="shift-editor__action-group">
-            <div class="shift-editor__action-pair">
-              <button class="btn btn-danger btn-icon" @click="$emit('delete')">
-                <span class="material-icons-round">delete</span>
-              </button>
-              <button 
-                class="btn btn-primary btn-icon" 
-                @click="$emit('apply-and-copy')"
-                :disabled="!isValid || props.hasOverlap"
-              >
-                <span class="material-icons-round">content_copy</span>
-              </button>
-              <button 
-                class="btn btn-success btn-icon" 
-                @click="$emit('update')"
-                :disabled="!isValid || props.hasOverlap"
-              >
-                <span class="material-icons-round">check</span>
-              </button>
-              <button class="btn btn-secondary btn-icon" @click="$emit('cancel')">
-                <span class="material-icons-round">close</span>
-              </button>
+        <div class="shift-editor__actions">
+          <template v-if="isEditing">
+            <div class="shift-editor__action-group">
+              <div class="shift-editor__action-pair">
+                <button class="btn btn-danger btn-icon" @click="$emit('delete')">
+                  <span class="material-icons-round">delete</span>
+                </button>
+                <button 
+                  class="btn btn-primary btn-icon" 
+                  @click="$emit('apply-and-copy')"
+                  :disabled="!isValid || hasOverlap"
+                >
+                  <span class="material-icons-round">content_copy</span>
+                </button>
+                <button 
+                  class="btn btn-success btn-icon" 
+                  @click="$emit('update')"
+                  :disabled="!isValid || hasOverlap"
+                >
+                  <span class="material-icons-round">check</span>
+                </button>
+                <button class="btn btn-secondary btn-icon" @click="$emit('cancel')">
+                  <span class="material-icons-round">close</span>
+                </button>
+              </div>
             </div>
-          </div>
-        </template>
-        <template v-else>
-          <div class="shift-editor__action-group">
-            <div class="shift-editor__action-pair">
-              <button 
-                class="btn btn-holiday btn-icon" 
-                :class="{ 'is-active': props.shift.isHoliday }"
-                @click="applyAsHoliday"
-                :disabled="props.disabled || !isValid || props.hasOverlap"
-              >
-                <span class="material-icons-round">beach_access</span>
-              </button>
-              <button 
-                class="btn btn-success btn-icon" 
-                @click="$emit('apply')"
-                :disabled="!isValid || props.hasOverlap || props.disabled"
-              >
-                <span class="material-icons-round">check</span>
-              </button>
-              <button class="btn btn-secondary btn-icon" @click="$emit('cancel')">
-                <span class="material-icons-round">close</span>
-              </button>
+          </template>
+          <template v-else>
+            <div class="shift-editor__action-group">
+              <div class="shift-editor__action-pair">
+                <button 
+                  class="btn btn-holiday btn-icon" 
+                  :class="{ 'is-active': shift.isHoliday }"
+                  @click="applyAsHoliday"
+                  :disabled="disabled || !isValid || hasOverlap"
+                >
+                  <span class="material-icons-round">beach_access</span>
+                </button>
+                <button 
+                  class="btn btn-success btn-icon" 
+                  @click="$emit('apply')"
+                  :disabled="!isValid || hasOverlap || disabled"
+                >
+                  <span class="material-icons-round">check</span>
+                </button>
+                <button class="btn btn-secondary btn-icon" @click="$emit('cancel')">
+                  <span class="material-icons-round">close</span>
+                </button>
+              </div>
             </div>
-          </div>
-        </template>
+          </template>
+        </div>
       </div>
+      <Transition name="fade">
+        <div v-if="warning" class="shift-editor__warning">
+          <span class="material-icons-round">warning</span>
+          {{ warning }}
+        </div>
+      </Transition>
     </div>
-
-    <Transition name="fade">
-      <div v-if="props.warning" class="shift-editor__warning">
-        <span class="material-icons-round">warning</span>
-        {{ props.warning }}
-      </div>
-    </Transition>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, toRefs } from 'vue';
 
 interface ShiftTime {
   startTime: string;
@@ -110,6 +112,8 @@ const props = defineProps<{
   warning: string;
 }>();
 
+const { shift, isEditing, disabled, hasOverlap, warning } = toRefs(props);
+
 const emit = defineEmits<{
   (e: 'update'): void;
   (e: 'delete'): void;
@@ -120,10 +124,10 @@ const emit = defineEmits<{
 }>();
 
 const isValid = computed(() => {
-  if (!props.shift.startTime || !props.shift.endTime) return false;
+  if (!shift.value.startTime || !shift.value.endTime) return false;
   
-  const [startHours, startMinutes] = props.shift.startTime.split(':').map(Number);
-  const [endHours, endMinutes] = props.shift.endTime.split(':').map(Number);
+  const [startHours, startMinutes] = shift.value.startTime.split(':').map(Number);
+  const [endHours, endMinutes] = shift.value.endTime.split(':').map(Number);
   
   const startTotalMinutes = startHours * 60 + startMinutes;
   const endTotalMinutes = endHours * 60 + endMinutes;
@@ -136,8 +140,8 @@ const isValid = computed(() => {
 });
 
 const applyAsHoliday = () => {
-  if (!isValid.value || props.hasOverlap || props.disabled) return;
-  props.shift.isHoliday = true;
+  if (!isValid.value || hasOverlap.value || disabled.value) return;
+  shift.value.isHoliday = true;
   emit('apply');
 };
 </script>
@@ -146,55 +150,77 @@ const applyAsHoliday = () => {
 @import '../../styles/abstracts/variables';
 
 .shift-editor {
-  background-color: rgba(white, 0.5);
-  backdrop-filter: blur(8px);
-  animation: slide-up 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  transform-origin: top;
-  will-change: transform, opacity;
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: grid;
+  place-items: center;
+  padding: $spacing-lg;
+
+  @media (max-width: $breakpoint-sm) {
+    padding: $spacing-md;
+  }
+
+  &__overlay {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(black, 0.4);
+    backdrop-filter: blur(12px);
+    animation: fade-in 0.3s ease-out;
+    will-change: opacity;
+  }
+
+  &__content {
+    position: relative;
+    z-index: 2001;
+    width: 100%;
+    max-width: 480px;
+    background-color: white;
+    border-radius: 24px;
+    box-shadow: 0 8px 32px rgba(black, 0.12);
+    animation: scale-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform-origin: center;
+    will-change: transform, opacity;
+    overflow: hidden;
+  }
 
   &__container {
-    display: flex;
+    display: grid;
     gap: $spacing-lg;
-    align-items: flex-end;
     padding: $spacing-lg;
 
     @media (max-width: $breakpoint-sm) {
-      flex-direction: column;
       gap: $spacing-md;
       padding: $spacing-md;
     }
   }
 
   &__form {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: $spacing-md;
-    flex: 1;
     min-width: 0;
-    align-items: flex-end;
 
     @media (max-width: $breakpoint-sm) {
-      flex-direction: column;
-      width: 100%;
-      align-items: stretch;
+      grid-template-columns: 1fr;
     }
 
     .form-group {
-      flex: 1;
       min-width: 0;
     }
   }
 
   &__warning {
-    margin-top: 0;
+    position: relative;
+    z-index: 2001;
     padding: $spacing-md;
-    background-color: rgba($danger, 0.08);
+    background-color: white;
     color: $danger;
     font-size: $font-size-sm;
     display: flex;
     align-items: center;
     gap: $spacing-xs;
     border-top: 1px solid rgba($danger, 0.1);
-    backdrop-filter: blur(8px);
     letter-spacing: 0.01em;
 
     .material-icons-round {
@@ -203,11 +229,9 @@ const applyAsHoliday = () => {
   }
 
   &__actions {
-    flex: 0 0 auto;
-
-    @media (max-width: $breakpoint-sm) {
-      width: 100%;
-    }
+    display: flex;
+    justify-content: flex-end;
+    min-width: 0;
   }
 
   &__action-group {
@@ -215,10 +239,6 @@ const applyAsHoliday = () => {
     gap: $spacing-sm;
     align-items: center;
     justify-content: flex-end;
-
-    @media (max-width: $breakpoint-sm) {
-      width: 100%;
-    }
   }
 
   &__action-pair {
@@ -256,7 +276,7 @@ const applyAsHoliday = () => {
   font-size: $font-size-base;
   font-family: $font-family-base;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  background-color: rgba(white, 0.8);
+  background-color: white;
   color: $text;
   appearance: none;
   height: 46px;
@@ -434,17 +454,26 @@ const applyAsHoliday = () => {
   transform: translateY(-4px);
 }
 
-@keyframes slide-up {
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scale-in {
   0% {
     opacity: 0;
-    transform: scale(0.98) translateY(-8px);
+    transform: scale(0.95);
   }
   60% {
-    transform: scale(1.01) translateY(1px);
+    transform: scale(1.02);
   }
   100% {
     opacity: 1;
-    transform: scale(1) translateY(0);
+    transform: scale(1);
   }
 }
 </style>

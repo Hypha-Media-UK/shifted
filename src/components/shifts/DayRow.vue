@@ -20,7 +20,7 @@
             :shift="shift"
             :accent-color="accentColor"
             :is-past="isPastDay"
-            @edit="editShift(shift)"
+            @edit="$emit('edit', shift)"
             @delete="quickDelete(shift.id)"
           />
         </template>
@@ -42,7 +42,7 @@
           <button 
             class="day-row__action-btn day-row__new-btn"
             :class="{ 'is-disabled': shifts.length >= 3 || isPastDay }"
-            @click.stop="handleNewClick"
+            @click.stop="$emit('expand')"
             :disabled="shifts.length >= 3 || isPastDay"
             :title="getNewButtonTitle"
           >
@@ -51,31 +51,12 @@
         </div>
       </div>
     </div>
-
-    <Transition name="slide-up">
-      <div v-if="isExpanded" class="day-row__content">
-        <ShiftEditor
-          :shift="currentShift"
-          :is-editing="isEditing"
-          :disabled="shifts.length >= 3 && !isEditing || isPastDay"
-          :has-overlap="hasOverlap"
-          :warning="validationWarning"
-          @update="updateShift"
-          @delete="deleteShift"
-          @cancel="cancelEdit"
-          @apply="applyShift"
-          @apply-and-copy="copyShift"
-          @toggle-holiday="toggleHoliday"
-        />
-      </div>
-    </Transition>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import { format, isBefore, startOfDay } from 'date-fns';
-import ShiftEditor from './ShiftEditor.vue';
 import ShiftPill from './ShiftPill.vue';
 
 interface ShiftTime {
@@ -102,15 +83,8 @@ const emit = defineEmits<{
   (e: 'copy-shift', shift: ShiftTime): void;
   (e: 'clear-clipboard'): void;
   (e: 'expand'): void;
+  (e: 'edit', shift: Shift): void;
 }>();
-
-const isEditing = ref(false);
-const editingShiftId = ref<number | null>(null);
-const currentShift = ref<ShiftTime>({
-  startTime: '',
-  endTime: '',
-  isHoliday: false
-});
 
 const formattedWeekday = computed(() => format(props.date, 'EEE'));
 const formattedDay = computed(() => format(props.date, 'd'));
@@ -142,15 +116,6 @@ const doShiftsOverlap = (shift1: ShiftTime, shift2: ShiftTime): boolean => {
          (start2 < adjustedEnd1 && adjustedEnd2 > start1);
 };
 
-const hasOverlap = computed(() => {
-  if (!currentShift.value.startTime || !currentShift.value.endTime) return false;
-  
-  return props.shifts.some(shift => {
-    if (isEditing.value && shift.id === editingShiftId.value) return false;
-    return doShiftsOverlap(currentShift.value, shift);
-  });
-});
-
 const wouldClipboardShiftOverlap = computed(() => {
   if (!props.clipboardShift) return false;
   return props.shifts.some(shift => doShiftsOverlap(props.clipboardShift!, shift));
@@ -162,13 +127,6 @@ const hasClipboardShift = computed(() => {
     shift.startTime === props.clipboardShift!.startTime && 
     shift.endTime === props.clipboardShift!.endTime
   );
-});
-
-const validationWarning = computed(() => {
-  if (!currentShift.value.startTime || !currentShift.value.endTime) return '';
-  if (hasOverlap.value) return 'This shift overlaps with an existing shift';
-  if (isPastDay.value) return 'Cannot modify shifts in past days';
-  return '';
 });
 
 const getNewButtonTitle = computed(() => {
@@ -185,37 +143,9 @@ const getAddButtonTitle = computed(() => {
   return 'Add copied shift';
 });
 
-const handleNewClick = () => {
-  if (props.shifts.length >= 3 || isPastDay.value) return;
-  emit('expand');
-};
-
 const quickDelete = (shiftId: number) => {
   if (isPastDay.value) return;
   emit('update-shifts', props.shifts.filter(shift => shift.id !== shiftId));
-};
-
-const applyShift = () => {
-  if (hasOverlap.value || isPastDay.value) return;
-  
-  const newShift: Shift = {
-    id: Date.now(),
-    startTime: currentShift.value.startTime,
-    endTime: currentShift.value.endTime,
-    isHoliday: currentShift.value.isHoliday
-  };
-  
-  emit('update-shifts', [...props.shifts, newShift]);
-  emit('clear-clipboard');
-  resetForm();
-  emit('expand');
-};
-
-const copyShift = () => {
-  if (hasOverlap.value || isPastDay.value) return;
-  emit('copy-shift', { ...currentShift.value });
-  resetForm();
-  emit('expand');
 };
 
 const applyClipboardShift = () => {
@@ -233,60 +163,6 @@ const applyClipboardShift = () => {
   };
   
   emit('update-shifts', [...props.shifts, newShift]);
-};
-
-const updateShift = () => {
-  if (hasOverlap.value || isPastDay.value) return;
-  
-  const updatedShifts = props.shifts.map(shift => 
-    shift.id === editingShiftId.value 
-      ? { 
-          ...shift, 
-          startTime: currentShift.value.startTime,
-          endTime: currentShift.value.endTime,
-          isHoliday: currentShift.value.isHoliday
-        } 
-      : shift
-  );
-  
-  emit('update-shifts', updatedShifts);
-  resetForm();
-  emit('expand');
-};
-
-const deleteShift = () => {
-  if (isPastDay.value) return;
-  emit('update-shifts', props.shifts.filter(shift => shift.id !== editingShiftId.value));
-  resetForm();
-  emit('expand');
-};
-
-const editShift = (shift: Shift) => {
-  if (isPastDay.value) return;
-  isEditing.value = true;
-  editingShiftId.value = shift.id;
-  currentShift.value = { 
-    startTime: shift.startTime,
-    endTime: shift.endTime,
-    isHoliday: shift.isHoliday
-  };
-  emit('clear-clipboard');
-  emit('expand');
-};
-
-const cancelEdit = () => {
-  resetForm();
-  emit('expand');
-};
-
-const toggleHoliday = () => {
-  currentShift.value.isHoliday = !currentShift.value.isHoliday;
-};
-
-const resetForm = () => {
-  currentShift.value = { startTime: '', endTime: '', isHoliday: false };
-  isEditing.value = false;
-  editingShiftId.value = null;
 };
 </script>
 
@@ -495,82 +371,6 @@ const resetForm = () => {
       opacity: 0.6;
       transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-  }
-
-  &__content {
-    border-top: 1px solid rgba($border, 0.6);
-    background: rgba(white, 0.5);
-    backdrop-filter: blur(8px);
-  }
-}
-
-// Transitions
-.slide-up-enter-active {
-  transition: 
-    transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
-    opacity 0.4s cubic-bezier(0.33, 1, 0.68, 1),
-    max-height 0.6s cubic-bezier(0.33, 1, 0.68, 1);
-  transform-origin: top;
-  max-height: 400px;
-  opacity: 1;
-  overflow: hidden;
-  will-change: transform, opacity, max-height;
-}
-
-.slide-up-leave-active {
-  transition: 
-    transform 0.2s cubic-bezier(0.32, 0, 0.67, 0),
-    opacity 0.15s cubic-bezier(0.32, 0, 0.67, 0),
-    max-height 0.2s cubic-bezier(0.32, 0, 0.67, 0);
-  transform-origin: top;
-  max-height: 400px;
-  opacity: 1;
-  overflow: hidden;
-  will-change: transform, opacity, max-height;
-}
-
-.slide-up-enter-from {
-  max-height: 0;
-  opacity: 0;
-  transform: scale(0.97) translateY(-12px);
-}
-
-.slide-up-leave-to {
-  max-height: 0;
-  opacity: 0;
-  transform: scale(0.97) translateY(-8px);
-}
-
-// Add spring animation to the editor content
-.shift-editor {
-  animation: spring-in 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
-  transform-origin: top;
-  will-change: transform, opacity;
-}
-
-@keyframes spring-in {
-  0% {
-    opacity: 0;
-    transform: scale(0.97) translateY(-12px);
-  }
-  50% {
-    opacity: 1;
-  }
-  65% {
-    transform: scale(1.02) translateY(2px);
-  }
-  85% {
-    transform: scale(0.99) translateY(-1px);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-.hide-sm {
-  @media (max-width: $breakpoint-sm) {
-    display: none;
   }
 }
 </style>

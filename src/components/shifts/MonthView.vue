@@ -7,7 +7,7 @@
         :date="date"
         :shifts="getShiftsForDate(date)"
         :accent-color="accentColor"
-        :clipboard-shift="clipboardShift"
+        :clipboard-shift="props.clipboardShift"
         :is-expanded="expandedDate === date.toISOString()"
         :is-selected="!!selectedDate && isSameDay(date, selectedDate)"
         :ref="(el) => {
@@ -16,9 +16,10 @@
           }
         }"
         @update-shifts="(shifts) => updateShiftsForDate(date, shifts)"
-        @copy-shift="setClipboardShift"
-        @clear-clipboard="clearClipboardShift"
-        @expand="handleExpand(date)"
+        @copy-shift="$emit('copy-shift', $event)"
+        @clear-clipboard="$emit('clear-clipboard')"
+        @expand="() => emit('edit-shift', { date })"
+        @edit="(shift) => emit('edit-shift', { shift, date })"
       />
     </div>
   </div>
@@ -56,14 +57,17 @@ const props = defineProps<{
   selectedDate?: Date;
   initialShifts?: ShiftMap;
   currentDate: Date;
+  clipboardShift: ShiftTime | null;
 }>();
 
 const emit = defineEmits<{
   (e: 'update-shifts', shifts: ShiftMap): void;
   (e: 'clear-selected-date'): void;
+  (e: 'edit-shift', data: { shift?: Shift, date: Date }): void;
+  (e: 'copy-shift', shift: ShiftTime): void;
+  (e: 'clear-clipboard'): void;
 }>();
 
-const clipboardShift = ref<ShiftTime | null>(null);
 const shifts = ref<ShiftMap>(props.initialShifts || {});
 const expandedDate = ref<string | null>(null);
 const selectedDayRef = ref<any>(null);
@@ -110,23 +114,6 @@ const updateShiftsForDate = (date: Date, newShifts: Shift[]) => {
   };
   shifts.value = updatedShifts;
   emit('update-shifts', updatedShifts);
-};
-
-const setClipboardShift = (shift: ShiftTime) => {
-  clipboardShift.value = shift;
-};
-
-const clearClipboardShift = () => {
-  clipboardShift.value = null;
-};
-
-const handleExpand = (date: Date) => {
-  const dateString = startOfDay(date).toISOString();
-  expandedDate.value = expandedDate.value === dateString ? null : dateString;
-  // Clear selected date when expanding any day
-  if (props.selectedDate) {
-    emit('clear-selected-date');
-  }
 };
 </script>
 

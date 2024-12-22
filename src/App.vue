@@ -67,8 +67,12 @@
             :selected-date="selectedDate"
             :initial-shifts="shifts"
             :current-date="currentDate"
+            :clipboard-shift="clipboardShift"
             @update-shifts="updateShifts"
             @clear-selected-date="clearSelectedDate"
+            @edit-shift="openShiftEditor"
+            @copy-shift="(shift) => clipboardShift = shift"
+            @clear-clipboard="() => clipboardShift = null"
           />
           <YearView
             v-else
@@ -80,6 +84,23 @@
         </Transition>
       </div>
     </main>
+
+    <Teleport to="body">
+      <ShiftEditor
+        v-if="showShiftEditor"
+        :shift="currentShift"
+        :is-editing="isEditing"
+        :disabled="false"
+        :has-overlap="hasOverlap"
+        :warning="validationWarning"
+        @update="updateShift"
+        @delete="deleteShift"
+        @cancel="closeShiftEditor"
+        @apply="applyShift"
+        @apply-and-copy="copyShift"
+        @toggle-holiday="toggleHoliday"
+      />
+    </Teleport>
   </div>
 </template>
 
@@ -89,6 +110,7 @@ import { format, addMonths, subMonths, addYears, subYears } from 'date-fns';
 import MonthView from './components/shifts/MonthView.vue';
 import YearView from './components/shifts/YearView.vue';
 import Login from './components/auth/Login.vue';
+import ShiftEditor from './components/shifts/ShiftEditor.vue';
 
 interface ShiftTime {
   startTime: string;
@@ -114,6 +136,152 @@ const shifts = ref<ShiftMap>({});
 const selectedDate = ref<Date | undefined>();
 const currentDate = ref(new Date());
 const currentUser = ref<string | null>(null);
+const clipboardShift = ref<ShiftTime | null>(null);
+
+// Shift Editor State
+const showShiftEditor = ref(false);
+const isEditing = ref(false);
+const editingShiftId = ref<number | null>(null);
+const currentShift = ref<ShiftTime>({
+  startTime: '',
+  endTime: '',
+  isHoliday: false
+});
+
+const hasOverlap = computed(() => {
+  if (!currentShift.value.startTime || !currentShift.value.endTime) return false;
+  
+  const dateKey = format(selectedDate.value!, 'yyyy-MM-dd');
+  const dayShifts = shifts.value[dateKey] || [];
+  
+  return dayShifts.some(shift => {
+    if (isEditing.value && shift.id === editingShiftId.value) return false;
+    return doShiftsOverlap(currentShift.value, shift);
+  });
+});
+
+const validationWarning = computed(() => {
+  if (!currentShift.value.startTime || !currentShift.value.endTime) return '';
+  if (hasOverlap.value) return 'This shift overlaps with an existing shift';
+  return '';
+});
+
+const timeToMinutes = (time: string): number => {
+  const [hours, minutes] = time.split(':').map(Number);
+  return hours * 60 + minutes;
+};
+
+const doShiftsOverlap = (shift1: ShiftTime, shift2: ShiftTime): boolean => {
+  const start1 = timeToMinutes(shift1.startTime);
+  const end1 = timeToMinutes(shift1.endTime);
+  const start2 = timeToMinutes(shift2.startTime);
+  const end2 = timeToMinutes(shift2.endTime);
+
+  const adjustedEnd1 = end1 < start1 ? end1 + 24 * 60 : end1;
+  const adjustedEnd2 = end2 < start2 ? end2 + 24 * 60 : end2;
+
+  return (start1 < adjustedEnd2 && adjustedEnd1 > start2) ||
+         (start2 < adjustedEnd1 && adjustedEnd2 > start1);
+};
+
+const openShiftEditor = (data: { shift?: Shift, date: Date }) => {
+  selectedDate.value = data.date;
+  
+  if (data.shift) {
+    isEditing.value = true;
+    editingShiftId.value = data.shift.id;
+    currentShift.value = { 
+      startTime: data.shift.startTime,
+      endTime: data.shift.endTime,
+      isHoliday: data.shift.isHoliday
+    };
+  } else {
+    isEditing.value = false;
+    editingShiftId.value = null;
+    currentShift.value = { startTime: '', endTime: '', isHoliday: false };
+  }
+  
+  showShiftEditor.value = true;
+};
+
+const closeShiftEditor = () => {
+  showShiftEditor.value = false;
+  currentShift.value = { startTime: '', endTime: '', isHoliday: false };
+  isEditing.value = false;
+  editingShiftId.value = null;
+};
+
+const updateShift = () => {
+  if (hasOverlap.value) return;
+  
+  const dateKey = format(selectedDate.value!, 'yyyy-MM-dd');
+  const dayShifts = [...(shifts.value[dateKey] || [])];
+  
+  const updatedShifts = dayShifts.map(shift => 
+    shift.id === editingShiftId.value 
+      ? { 
+          ...shift, 
+          startTime: currentShift.value.startTime,
+          endTime: currentShift.value.endTime,
+          isHoliday: currentShift.value.isHoliday
+        } 
+      : shift
+  );
+  
+  shifts.value = {
+    ...shifts.value,
+    [dateKey]: updatedShifts
+  };
+  
+  closeShiftEditor();
+};
+
+const deleteShift = () => {
+  const dateKey = format(selectedDate.value!, 'yyyy-MM-dd');
+  const dayShifts = shifts.value[dateKey] || [];
+  
+  shifts.value = {
+    ...shifts.value,
+    [dateKey]: dayShifts.filter(shift => shift.id !== editingShiftId.value)
+  };
+  
+  closeShiftEditor();
+};
+
+const applyShift = () => {
+  if (hasOverlap.value) return;
+  
+  const dateKey = format(selectedDate.value!, 'yyyy-MM-dd');
+  const dayShifts = shifts.value[dateKey] || [];
+  
+  const newShift: Shift = {
+    id: Date.now(),
+    startTime: currentShift.value.startTime,
+    endTime: currentShift.value.endTime,
+    isHoliday: currentShift.value.isHoliday
+  };
+  
+  shifts.value = {
+    ...shifts.value,
+    [dateKey]: [...dayShifts, newShift]
+  };
+  
+  closeShiftEditor();
+};
+
+const copyShift = () => {
+  if (hasOverlap.value) return;
+  clipboardShift.value = { 
+    startTime: currentShift.value.startTime,
+    endTime: currentShift.value.endTime,
+    isHoliday: currentShift.value.isHoliday
+  };
+  closeShiftEditor();
+};
+
+const toggleHoliday = () => {
+  currentShift.value.isHoliday = !currentShift.value.isHoliday;
+};
 
 // Computed
 const currentYear = computed(() => currentDate.value.getFullYear());
