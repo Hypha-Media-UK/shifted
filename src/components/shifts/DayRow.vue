@@ -30,15 +30,6 @@
         </div>
         <div class="day-row__actions">
           <button 
-            class="day-row__action-btn day-row__new-btn"
-            :class="{ 'is-disabled': shifts.length >= 3 || isPastDay }"
-            @click.stop="handleNewClick"
-            :disabled="shifts.length >= 3 || isPastDay"
-            :title="getNewButtonTitle"
-          >
-            <span class="material-icons-round">add</span>
-          </button>
-          <button 
             v-if="clipboardShift"
             class="day-row__action-btn day-row__add-btn"
             :class="{ 'is-disabled': shifts.length >= 3 || hasClipboardShift || wouldClipboardShiftOverlap || isPastDay }"
@@ -47,6 +38,15 @@
             :title="getAddButtonTitle"
           >
             <span class="material-icons-round">content_paste</span>
+          </button>
+          <button 
+            class="day-row__action-btn day-row__new-btn"
+            :class="{ 'is-disabled': shifts.length >= 3 || isPastDay }"
+            @click.stop="handleNewClick"
+            :disabled="shifts.length >= 3 || isPastDay"
+            :title="getNewButtonTitle"
+          >
+            <span class="material-icons-round">add</span>
           </button>
         </div>
       </div>
@@ -436,13 +436,17 @@ const resetForm = () => {
     }
   }
 
-  &__new-btn {
-    background: rgba($success, 0.25);
-    color: $success;
+  &__new-btn,
+  &__add-btn {
     width: 32px;
     height: 32px;
     padding: 0;
     justify-content: center;
+  }
+
+  &__new-btn {
+    background: rgba($success, 0.25);
+    color: $success;
 
     &:hover:not(.is-disabled) {
       background: rgba($success, 0.3);
