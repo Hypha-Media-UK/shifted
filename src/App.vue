@@ -215,19 +215,22 @@ const updateShift = () => {
   if (hasOverlap.value) return;
   
   const dateKey = format(selectedDate.value!, 'yyyy-MM-dd');
-  const dayShifts = [...(shifts.value[dateKey] || [])];
+  const dayShifts = shifts.value[dateKey] || [];
   
-  const updatedShifts = dayShifts.map(shift => 
-    shift.id === editingShiftId.value 
-      ? { 
-          ...shift, 
-          startTime: currentShift.value.startTime,
-          endTime: currentShift.value.endTime,
-          isHoliday: currentShift.value.isHoliday
-        } 
-      : shift
-  );
+  // Create new array with updated shift
+  const updatedShifts = dayShifts.map(shift => {
+    if (shift.id === editingShiftId.value) {
+      return {
+        id: shift.id,
+        startTime: currentShift.value.startTime,
+        endTime: currentShift.value.endTime,
+        isHoliday: currentShift.value.isHoliday
+      };
+    }
+    return shift;
+  });
   
+  // Force Vue to recognize the change by creating a new object
   shifts.value = {
     ...shifts.value,
     [dateKey]: updatedShifts
@@ -281,7 +284,31 @@ const copyShift = () => {
 };
 
 const toggleHoliday = () => {
-  currentShift.value.isHoliday = !currentShift.value.isHoliday;
+  // For existing shifts, update in the shifts map
+  if (isEditing.value && editingShiftId.value) {
+    const dateKey = format(selectedDate.value!, 'yyyy-MM-dd');
+    const dayShifts = [...shifts.value[dateKey] || []];
+    
+    // Find the shift and toggle its holiday status
+    const shiftToUpdate = dayShifts.find(shift => shift.id === editingShiftId.value);
+    if (shiftToUpdate) {
+      shiftToUpdate.isHoliday = !shiftToUpdate.isHoliday;
+      currentShift.value.isHoliday = shiftToUpdate.isHoliday;
+      
+      // Force Vue to recognize the change
+      shifts.value = {
+        ...shifts.value,
+        [dateKey]: dayShifts
+      };
+    }
+  }
+  // For new shifts, just update currentShift
+  else {
+    currentShift.value.isHoliday = !currentShift.value.isHoliday;
+  }
+  
+  // Close the modal
+  closeShiftEditor();
 };
 
 // Computed

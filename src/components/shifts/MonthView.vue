@@ -68,7 +68,7 @@ const emit = defineEmits<{
   (e: 'clear-clipboard'): void;
 }>();
 
-const shifts = ref<ShiftMap>(props.initialShifts || {});
+const shifts = ref<ShiftMap>({});
 const expandedDate = ref<string | null>(null);
 const selectedDayRef = ref<any>(null);
 

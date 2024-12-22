@@ -40,6 +40,14 @@
                   <span class="material-icons-round">delete</span>
                 </button>
                 <button 
+                  class="btn btn-holiday btn-icon" 
+                  :class="{ 'is-active': shift.isHoliday }"
+                  @click="toggleHoliday"
+                  :title="shift.isHoliday ? 'Remove holiday' : 'Mark as holiday'"
+                >
+                  <span class="material-icons-round">{{ shift.isHoliday ? 'celebration' : 'beach_access' }}</span>
+                </button>
+                <button 
                   class="btn btn-primary btn-icon" 
                   @click="$emit('apply-and-copy')"
                   :disabled="!isValid || hasOverlap"
@@ -65,10 +73,10 @@
                 <button 
                   class="btn btn-holiday btn-icon" 
                   :class="{ 'is-active': shift.isHoliday }"
-                  @click="applyAsHoliday"
-                  :disabled="disabled || !isValid || hasOverlap"
+                  @click="toggleHoliday"
+                  :title="shift.isHoliday ? 'Remove holiday' : 'Mark as holiday'"
                 >
-                  <span class="material-icons-round">beach_access</span>
+                  <span class="material-icons-round">{{ shift.isHoliday ? 'celebration' : 'beach_access' }}</span>
                 </button>
                 <button 
                   class="btn btn-success btn-icon" 
@@ -148,10 +156,11 @@ const isValid = computed(() => {
   return adjustedEndMinutes - startTotalMinutes <= 24 * 60;
 });
 
-const applyAsHoliday = () => {
-  if (!isValid.value || hasOverlap.value || disabled.value) return;
-  shift.value.isHoliday = true;
-  emit('apply');
+const toggleHoliday = () => {
+  shift.value.isHoliday = !shift.value.isHoliday;
+  if (isEditing.value) {
+    emit('toggle-holiday');
+  }
 };
 </script>
 
@@ -399,8 +408,9 @@ const applyAsHoliday = () => {
 
   &:active:not(:disabled),
   &.is-active:not(:disabled) {
-    background: rgba($holiday, 0.25);
-    color: darken($holiday, 5%);
+    background: rgba($holiday, 0.3);
+    color: $holiday;
+    box-shadow: inset 0 2px 4px rgba($holiday, 0.2);
   }
 
   &:disabled {

@@ -1,7 +1,7 @@
 <template>
   <div 
     class="shift-pill"
-    :class="[!isPast && timeOfDayClass, { 'is-holiday': !isPast && shift.isHoliday, 'is-past': isPast }]"
+    :class="[timeOfDayClass, { 'is-holiday': shift.isHoliday, 'is-past': isPast }]"
     :title="`${formatShiftTime(shift.startTime)} - ${formatShiftTime(shift.endTime)}${shift.isHoliday ? ' (Holiday)' : ''}`"
   >
     <span 
@@ -61,10 +61,6 @@ const formatShiftTime = (time: string) => {
 };
 
 const timeOfDayClass = computed(() => {
-  if (props.shift.isHoliday) {
-    return 'is-holiday';
-  }
-
   const hour = parseInt(props.shift.startTime.split(':')[0]);
   
   if (hour >= 5 && hour < 12) {
@@ -159,17 +155,18 @@ const timeOfDayClass = computed(() => {
   }
 
   &.is-holiday {
-    background-color: rgba($holiday, 0.2);
-    border-color: rgba($holiday, 0.3);
+    background-color: rgba($holiday, 0.25);
+    border-color: rgba($holiday, 0.4);
+    box-shadow: 0 1px 3px rgba($holiday, 0.2);
     .shift-pill__time--active {
-      color: color.adjust($holiday, $lightness: -20%);
+      color: $holiday;
       .material-icons-round {
-        color: color.adjust($holiday, $lightness: -20%);
+        color: $holiday;
       }
       &:hover {
-        color: color.adjust($holiday, $lightness: -35%);
+        color: darken($holiday, 10%);
         .material-icons-round {
-          color: color.adjust($holiday, $lightness: -35%);
+          color: darken($holiday, 10%);
         }
       }
     }
