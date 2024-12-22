@@ -80,6 +80,7 @@ const timeOfDayClass = computed(() => {
 </script>
 
 <style lang="scss" scoped>
+@use "sass:color";
 @import '../../styles/abstracts/variables';
 
 .shift-pill {
@@ -117,9 +118,9 @@ const timeOfDayClass = computed(() => {
     background-color: rgba($morning, 0.2);
     border-color: rgba($morning, 0.3);
     .shift-pill__time--active:hover {
-      color: darken($morning, 35%);
+      color: color.adjust($morning, $lightness: -35%);
       .material-icons-round {
-        color: darken($morning, 35%);
+        color: color.adjust($morning, $lightness: -35%);
       }
     }
   }
@@ -128,9 +129,9 @@ const timeOfDayClass = computed(() => {
     background-color: rgba($afternoon, 0.2);
     border-color: rgba($afternoon, 0.3);
     .shift-pill__time--active:hover {
-      color: darken($afternoon, 35%);
+      color: color.adjust($afternoon, $lightness: -35%);
       .material-icons-round {
-        color: darken($afternoon, 35%);
+        color: color.adjust($afternoon, $lightness: -35%);
       }
     }
   }
@@ -139,9 +140,9 @@ const timeOfDayClass = computed(() => {
     background-color: rgba($evening, 0.2);
     border-color: rgba($evening, 0.3);
     .shift-pill__time--active:hover {
-      color: darken($evening, 35%);
+      color: color.adjust($evening, $lightness: -35%);
       .material-icons-round {
-        color: darken($evening, 35%);
+        color: color.adjust($evening, $lightness: -35%);
       }
     }
   }
@@ -150,9 +151,9 @@ const timeOfDayClass = computed(() => {
     background-color: rgba($night, 0.2);
     border-color: rgba($night, 0.3);
     .shift-pill__time--active:hover {
-      color: darken($night, 35%);
+      color: color.adjust($night, $lightness: -35%);
       .material-icons-round {
-        color: darken($night, 35%);
+        color: color.adjust($night, $lightness: -35%);
       }
     }
   }
@@ -161,14 +162,14 @@ const timeOfDayClass = computed(() => {
     background-color: rgba($holiday, 0.2);
     border-color: rgba($holiday, 0.3);
     .shift-pill__time--active {
-      color: darken($holiday, 20%);
+      color: color.adjust($holiday, $lightness: -20%);
       .material-icons-round {
-        color: darken($holiday, 20%);
+        color: color.adjust($holiday, $lightness: -20%);
       }
       &:hover {
-        color: darken($holiday, 35%);
+        color: color.adjust($holiday, $lightness: -35%);
         .material-icons-round {
-          color: darken($holiday, 35%);
+          color: color.adjust($holiday, $lightness: -35%);
         }
       }
     }
