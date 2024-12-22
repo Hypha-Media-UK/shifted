@@ -40,12 +40,20 @@
                   <span class="material-icons-round">delete</span>
                 </button>
                 <button 
+                  v-if="!shift.isHoliday"
                   class="btn btn-holiday btn-icon" 
-                  :class="{ 'is-active': shift.isHoliday }"
                   @click="toggleHoliday"
-                  :title="shift.isHoliday ? 'Remove holiday' : 'Mark as holiday'"
+                  title="Mark as holiday"
                 >
-                  <span class="material-icons-round">{{ shift.isHoliday ? 'celebration' : 'beach_access' }}</span>
+                  <span class="material-icons-round">beach_access</span>
+                </button>
+                <button 
+                  v-else
+                  class="btn btn-revert btn-icon" 
+                  @click="toggleHoliday"
+                  title="Change back to standard shift"
+                >
+                  <span class="material-icons-round">settings_backup_restore</span>
                 </button>
                 <button 
                   class="btn btn-primary btn-icon" 
@@ -71,12 +79,20 @@
             <div class="shift-editor__action-group">
               <div class="shift-editor__action-pair">
                 <button 
+                  v-if="!shift.isHoliday"
                   class="btn btn-holiday btn-icon" 
-                  :class="{ 'is-active': shift.isHoliday }"
                   @click="toggleHoliday"
-                  :title="shift.isHoliday ? 'Remove holiday' : 'Mark as holiday'"
+                  title="Mark as holiday"
                 >
-                  <span class="material-icons-round">{{ shift.isHoliday ? 'celebration' : 'beach_access' }}</span>
+                  <span class="material-icons-round">beach_access</span>
+                </button>
+                <button 
+                  v-else
+                  class="btn btn-revert btn-icon" 
+                  @click="toggleHoliday"
+                  title="Change back to standard shift"
+                >
+                  <span class="material-icons-round">settings_backup_restore</span>
                 </button>
                 <button 
                   class="btn btn-success btn-icon" 
@@ -406,11 +422,22 @@ const toggleHoliday = () => {
     box-shadow: 0 2px 4px rgba($holiday, 0.2);
   }
 
-  &:active:not(:disabled),
-  &.is-active:not(:disabled) {
-    background: rgba($holiday, 0.3);
-    color: $holiday;
-    box-shadow: inset 0 2px 4px rgba($holiday, 0.2);
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: rgba($text, 0.08) !important;
+    color: rgba($text, 0.3) !important;
+    box-shadow: none;
+  }
+}
+
+.btn-revert {
+  background: rgba($text, 0.1);
+  color: rgba($text, 0.7);
+
+  &:hover:not(:disabled) {
+    background: rgba($text, 0.15);
+    box-shadow: 0 2px 4px rgba($text, 0.15);
   }
 
   &:disabled {
