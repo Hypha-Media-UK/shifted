@@ -146,18 +146,19 @@ const applyAsHoliday = () => {
 @import '../../styles/abstracts/variables';
 
 .shift-editor {
-  background-color: rgba($background, 0.5);
+  background-color: rgba(white, 0.5);
+  backdrop-filter: blur(8px);
 
   &__container {
     display: flex;
     gap: $spacing-lg;
     align-items: flex-end;
-    padding: $spacing-md $spacing-lg;
+    padding: $spacing-lg;
 
     @media (max-width: $breakpoint-sm) {
       flex-direction: column;
       gap: $spacing-md;
-      padding: $spacing-sm;
+      padding: $spacing-md;
     }
   }
 
@@ -182,14 +183,16 @@ const applyAsHoliday = () => {
 
   &__warning {
     margin-top: 0;
-    padding: $spacing-sm $spacing-md;
-    background-color: rgba($danger, 0.1);
+    padding: $spacing-md;
+    background-color: rgba($danger, 0.08);
     color: $danger;
     font-size: $font-size-sm;
     display: flex;
     align-items: center;
     gap: $spacing-xs;
     border-top: 1px solid rgba($danger, 0.1);
+    backdrop-filter: blur(8px);
+    letter-spacing: 0.01em;
 
     .material-icons-round {
       font-size: 1.1rem;
@@ -237,15 +240,15 @@ const applyAsHoliday = () => {
     margin-left: $spacing-xs;
 
     .btn-icon {
-      width: 32px;
-      height: 32px;
+      width: 38px;
+      height: 38px;
       padding: 0;
       display: flex;
       align-items: center;
       justify-content: center;
 
       &.btn-wide {
-        width: 64px;
+        width: 76px;
       }
     }
   }
@@ -260,147 +263,199 @@ const applyAsHoliday = () => {
   align-items: center;
   gap: $spacing-xs;
   margin-bottom: $spacing-xs;
-  color: $text;
+  color: rgba($text, 0.8);
   font-weight: $font-weight-medium;
   font-size: $font-size-sm;
+  letter-spacing: 0.01em;
 
   .material-icons-round {
     font-size: 1.1rem;
-    color: $text-light;
+    color: rgba($text-light, 0.9);
   }
 }
 
 .form-control {
   width: 100%;
-  padding: $spacing-xs $spacing-sm;
-  border: 2px solid $border;
-  border-radius: $border-radius-sm;
+  padding: $spacing-sm $spacing-md;
+  border: 1px solid rgba($border, 0.8);
+  border-radius: 10px;
   font-size: $font-size-base;
   font-family: $font-family-base;
-  transition: all $transition-speed ease;
-  background-color: white;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background-color: rgba(white, 0.8);
   color: $text;
   appearance: none;
-  height: 32px;
+  height: 42px;
+  letter-spacing: 0.01em;
+  -webkit-tap-highlight-color: transparent;
   
   &:hover:not(:disabled) {
-    border-color: $text-light;
+    border-color: rgba($text-light, 0.6);
+    background-color: rgba(white, 0.9);
   }
   
   &:focus:not(:disabled) {
     outline: none;
     border-color: $primary;
-    box-shadow: 0 0 0 3px rgba($primary, 0.1);
+    background-color: white;
+    box-shadow: 0 2px 4px rgba($primary, 0.1);
   }
 
   &:disabled {
-    background-color: rgba($text, 0.05);
-    color: $text-light;
+    background-color: rgba($text, 0.03);
+    color: rgba($text-light, 0.8);
     cursor: not-allowed;
+    border-color: rgba($border, 0.4);
   }
 
   &.has-error {
     border-color: $danger;
     
     &:focus {
-      box-shadow: 0 0 0 3px rgba($danger, 0.1);
+      box-shadow: 0 2px 4px rgba($danger, 0.1);
     }
   }
 }
 
 .btn {
   &.btn-icon {
-    width: 32px;
-    height: 32px;
+    width: 38px;
+    height: 38px;
     padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: $font-size-sm;
     font-weight: $font-weight-medium;
+    border-radius: 999px;
+    border: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    -webkit-tap-highlight-color: transparent;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 
     .material-icons-round {
-      font-size: 1.1rem;
+      font-size: 1.2rem;
     }
 
     &.btn-wide {
-      width: 64px;
+      width: 76px;
+    }
+
+    &:active:not(:disabled) {
+      transform: scale(0.96);
+      box-shadow: none;
     }
   }
 }
 
 .btn-success {
-  background: rgba($success, 0.25);
+  background: rgba($success, 0.15);
   color: $success;
-  border: none;
 
   &:hover:not(:disabled) {
-    background: rgba($success, 0.3);
-    transform: translateY(-1px);
-  }
-
-  &:active:not(:disabled) {
-    transform: translateY(0);
+    background: rgba($success, 0.2);
+    box-shadow: 0 2px 4px rgba($success, 0.2);
   }
 
   &:disabled {
-    opacity: 0.5;
+    opacity: 0.4;
     cursor: not-allowed;
+    background: rgba($text, 0.08) !important;
+    color: rgba($text, 0.3) !important;
+    box-shadow: none;
   }
 }
 
 .btn-primary {
-  background: rgba($primary, 0.25);
+  background: rgba($primary, 0.15);
   color: $primary;
-  border: none;
 
   &:hover:not(:disabled) {
-    background: rgba($primary, 0.3);
-    transform: translateY(-1px);
-  }
-
-  &:active:not(:disabled) {
-    transform: translateY(0);
+    background: rgba($primary, 0.2);
+    box-shadow: 0 2px 4px rgba($primary, 0.2);
   }
 
   &:disabled {
-    opacity: 0.5;
+    opacity: 0.4;
     cursor: not-allowed;
+    background: rgba($text, 0.08) !important;
+    color: rgba($text, 0.3) !important;
+    box-shadow: none;
   }
 }
 
 .btn-holiday {
-  background: rgba($holiday, 0.25);
+  background: rgba($holiday, 0.15);
   color: $holiday;
-  border: none;
 
   &:hover:not(:disabled) {
-    background: rgba($holiday, 0.3);
-    transform: translateY(-1px);
+    background: rgba($holiday, 0.2);
+    box-shadow: 0 2px 4px rgba($holiday, 0.2);
   }
 
   &:active:not(:disabled),
   &.is-active:not(:disabled) {
-    background: rgba($holiday, 0.4);
+    background: rgba($holiday, 0.25);
     color: darken($holiday, 5%);
-    transform: translateY(0);
   }
 
   &:disabled {
-    opacity: 0.5;
+    opacity: 0.4;
     cursor: not-allowed;
+    background: rgba($text, 0.08) !important;
+    color: rgba($text, 0.3) !important;
+    box-shadow: none;
+  }
+}
+
+.btn-secondary {
+  background: rgba($text, 0.08);
+  color: rgba($text, 0.7);
+
+  &:hover:not(:disabled) {
+    background: rgba($text, 0.12);
+    box-shadow: 0 2px 4px rgba($text, 0.1);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: rgba($text, 0.08) !important;
+    color: rgba($text, 0.3) !important;
+    box-shadow: none;
+  }
+}
+
+.btn-danger {
+  background: rgba($danger, 0.15);
+  color: $danger;
+
+  &:hover:not(:disabled) {
+    background: rgba($danger, 0.2);
+    box-shadow: 0 2px 4px rgba($danger, 0.2);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: rgba($text, 0.08) !important;
+    color: rgba($text, 0.3) !important;
+    box-shadow: none;
   }
 }
 
 // Transitions
-.fade-enter-active,
+.fade-enter-active {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 .fade-leave-active {
-  transition: all $transition-speed ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
-  transform: translateY(-$spacing-sm);
+  transform: translateY(-4px);
 }
 </style>
