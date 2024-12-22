@@ -266,6 +266,7 @@ const applyShift = () => {
     [dateKey]: [...dayShifts, newShift]
   };
   
+  clipboardShift.value = null;
   closeShiftEditor();
 };
 
