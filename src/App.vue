@@ -4,21 +4,31 @@
     <header class="app__header">
       <div class="container">
         <div class="app__header-content">
-          <div class="app__header-top">
-            <h1>
-              <span class="material-icons-round">calendar_today</span>
-              Shifted
-            </h1>
+          <h1>
+            <span class="material-icons-round">calendar_today</span>
+            Shifted
+          </h1>
 
-            <div class="user-controls">
-              <span class="user-name">{{ currentUser }}</span>
-              <button class="btn btn-icon" @click="handleLogout" title="Logout">
-                <span class="material-icons-round">logout</span>
-              </button>
-            </div>
+          <div class="user-controls">
+            <span class="user-name">{{ currentUser }}</span>
+            <button class="btn btn-icon" @click="handleLogout" title="Logout">
+              <span class="material-icons-round">logout</span>
+            </button>
           </div>
           
           <div class="app__header-controls">
+            <div class="date-navigation">
+              <button class="btn btn-icon" @click="navigateBack">
+                <span class="material-icons-round">chevron_left</span>
+              </button>
+              <h2 class="date-navigation__title">
+                {{ currentView === 'month' ? formattedMonth : currentYear }}
+              </h2>
+              <button class="btn btn-icon" @click="navigateForward">
+                <span class="material-icons-round">chevron_right</span>
+              </button>
+            </div>
+
             <div class="view-toggle">
               <div class="view-toggle__container">
                 <button 
@@ -38,18 +48,6 @@
                   Year
                 </button>
               </div>
-            </div>
-
-            <div class="date-navigation">
-              <button class="btn btn-icon" @click="navigateBack">
-                <span class="material-icons-round">chevron_left</span>
-              </button>
-              <h2 class="date-navigation__title">
-                {{ currentView === 'month' ? formattedMonth : currentYear }}
-              </h2>
-              <button class="btn btn-icon" @click="navigateForward">
-                <span class="material-icons-round">chevron_right</span>
-              </button>
             </div>
           </div>
         </div>
@@ -265,21 +263,35 @@ onMounted(() => {
 
     .container {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: space-between;
-      gap: $spacing-md;
     }
   }
 
   &__header-content {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-areas: "logo nav user";
+    grid-template-columns: auto 1fr auto;
     gap: $spacing-md;
     width: 100%;
     position: relative;
+    align-items: center;
+
+    @media (max-width: 960px) {
+      grid-template-areas: 
+        "logo . user"
+        "nav nav nav";
+      grid-template-columns: auto 1fr auto;
+      row-gap: $spacing-md;
+    }
+
+    @media (max-width: $breakpoint-sm) {
+      row-gap: $spacing-sm;
+    }
 
     h1 {
-      font-size: $font-size-xl;
+      grid-area: logo;
+      font-size: $font-size-lg;
       font-weight: $font-weight-bold;
       margin: 0;
       color: white;
@@ -289,31 +301,34 @@ onMounted(() => {
       white-space: nowrap;
 
       .material-icons-round {
-        font-size: 1.75rem;
-      }
-
-      @media (max-width: $breakpoint-sm) {
-        font-size: $font-size-lg;
+        font-size: 1.5rem;
       }
     }
   }
 
-  &__header-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: $spacing-md;
-  }
-
   &__header-controls {
+    grid-area: nav;
     display: flex;
     align-items: center;
     gap: $spacing-md;
-    justify-content: space-between;
+    justify-content: flex-end;
+    max-width: 600px;
+    margin-left: auto;
+
+    @media (max-width: 960px) {
+      width: 100%;
+    }
 
     @media (max-width: $breakpoint-sm) {
-      flex-direction: row;
       gap: $spacing-sm;
+    }
+
+    > * {
+      width: 240px;
+
+      @media (max-width: $breakpoint-sm) {
+        width: 50%;
+      }
     }
   }
 
@@ -343,7 +358,7 @@ onMounted(() => {
     }
 
     h2 {
-      font-size: $font-size-xl;
+      font-size: $font-size-lg;
       font-weight: $font-weight-bold;
       color: $text;
       margin: 0;
@@ -352,12 +367,14 @@ onMounted(() => {
 }
 
 .user-controls {
+  grid-area: user;
   display: flex;
   align-items: center;
   gap: $spacing-sm;
   background: rgba(white, 0.1);
   padding: $spacing-xs $spacing-lg;
   border-radius: $border-radius;
+  justify-self: end;
 
   @media (max-width: $breakpoint-sm) {
     padding: $spacing-xs $spacing-md;
@@ -402,12 +419,11 @@ onMounted(() => {
   border-radius: $border-radius;
 
   @media (max-width: $breakpoint-sm) {
-    flex: 1;
     justify-content: center;
   }
 
   &__title {
-    font-size: $font-size-lg;
+    font-size: $font-size-base;
     font-weight: $font-weight-bold;
     margin: 0;
     color: white;
@@ -415,7 +431,7 @@ onMounted(() => {
     text-align: center;
 
     @media (max-width: $breakpoint-sm) {
-      font-size: $font-size-base;
+      font-size: $font-size-sm;
       min-width: 90px;
     }
   }
@@ -446,11 +462,8 @@ onMounted(() => {
 
 .view-toggle {
   position: relative;
-  width: 180px;
 
   @media (max-width: $breakpoint-sm) {
-    width: auto;
-    flex: 1;
     min-width: 0;
   }
 
