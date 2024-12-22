@@ -43,7 +43,7 @@
                   type="button"
                   class="view-toggle__btn"
                   :class="{ active: currentView === 'year' }"
-                  @click="currentView = 'year'"
+                  @click="() => { currentView = 'year'; scrollToTop(); }"
                 >
                   Year
                 </button>
@@ -354,6 +354,7 @@ const handleDateSelect = (date: Date) => {
   selectedDate.value = date;
   currentView.value = 'month';
   currentDate.value = date;
+  scrollToTop();
 };
 
 const clearSelectedDate = () => {
@@ -363,6 +364,14 @@ const clearSelectedDate = () => {
 const switchToMonth = () => {
   selectedDate.value = undefined;
   currentView.value = 'month';
+  scrollToTop();
+};
+
+const scrollToTop = () => {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
 };
 
 const navigateBack = () => {
@@ -371,6 +380,7 @@ const navigateBack = () => {
   } else {
     currentDate.value = subYears(currentDate.value, 1);
   }
+  scrollToTop();
 };
 
 const navigateForward = () => {
@@ -379,6 +389,7 @@ const navigateForward = () => {
   } else {
     currentDate.value = addYears(currentDate.value, 1);
   }
+  scrollToTop();
 };
 
 // Handle login

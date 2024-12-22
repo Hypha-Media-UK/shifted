@@ -96,7 +96,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, toRefs } from 'vue';
+import { computed, toRefs, watch } from 'vue';
 
 interface ShiftTime {
   startTime: string;
@@ -113,6 +113,15 @@ const props = defineProps<{
 }>();
 
 const { shift, isEditing, disabled, hasOverlap, warning } = toRefs(props);
+
+// Watch for startTime changes and set endTime one hour ahead for new shifts
+watch(() => shift.value.startTime, (newStartTime) => {
+  if (!isEditing.value && newStartTime && !shift.value.endTime) {
+    const [hours, minutes] = newStartTime.split(':').map(Number);
+    const endHours = (hours + 1) % 24;
+    shift.value.endTime = `${endHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+  }
+});
 
 const emit = defineEmits<{
   (e: 'update'): void;
