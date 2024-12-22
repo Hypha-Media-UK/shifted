@@ -84,17 +84,34 @@ const timeOfDayClass = computed(() => {
 
 .shift-pill {
   padding: $spacing-xs $spacing-sm;
-  border-radius: $border-radius;
+  border-radius: 8px;
   font-size: $font-size-sm;
   display: inline-flex;
   align-items: center;
   gap: $spacing-xs;
   border: 1px solid transparent;
-  transition: all $transition-speed ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
   min-width: 0;
   flex: 1;
   max-width: 150px;
+  animation: pill-appear 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  will-change: transform, opacity;
+  transform-origin: center;
+
+  @keyframes pill-appear {
+    0% {
+      opacity: 0;
+      transform: scale(0.8) translateY(4px);
+    }
+    60% {
+      transform: scale(1.02);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
 
   &.is-morning {
     background-color: rgba($morning, 0.2);
@@ -163,14 +180,20 @@ const timeOfDayClass = computed(() => {
   }
 
   &:not(.is-past):hover {
-    box-shadow: $shadow-sm;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+  }
+
+  &:not(.is-past):active {
+    transform: scale(0.98);
+    box-shadow: none;
   }
 
   &__time {
     display: inline-flex;
     align-items: center;
     gap: $spacing-xs;
-    transition: all $transition-speed ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     color: $text;
     font-weight: $font-weight-medium;
     white-space: nowrap;
@@ -221,7 +244,7 @@ const timeOfDayClass = computed(() => {
     justify-content: center;
     cursor: pointer;
     padding: 0;
-    transition: all $transition-speed ease;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     flex-shrink: 0;
 
     .material-icons-round {
