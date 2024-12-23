@@ -456,7 +456,8 @@ onMounted(() => {
 </script>
 
 <style lang="scss">
-@import './styles/main.scss';
+@use './styles/abstracts/variables' as *;
+@use './styles/main';
 
 .app {
   min-height: 100vh;

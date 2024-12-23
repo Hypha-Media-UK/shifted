@@ -83,8 +83,8 @@ const timeOfDayClass = computed(() => {
 </script>
 
 <style lang="scss" scoped>
-@use "sass:color";
-@import '../../styles/abstracts/variables';
+@use 'sass:color';
+@use '../../styles/main' as *;
 
 .shift-pill {
   padding: $spacing-xs $spacing-sm;
@@ -109,14 +109,14 @@ const timeOfDayClass = computed(() => {
   @keyframes pill-appear {
     0% {
       opacity: 0;
-      transform: scale(0.8) translateY(4px);
+      transform: translate3d(0, 0, 0) scale(0.8) translateY(4px);
     }
     60% {
-      transform: scale(1.02);
+      transform: translate3d(0, 0, 0) scale(1.02);
     }
     100% {
       opacity: 1;
-      transform: scale(1) translateY(0);
+      transform: translate3d(0, 0, 0) scale(1) translateY(0);
     }
   }
 
@@ -176,9 +176,9 @@ const timeOfDayClass = computed(() => {
         color: $holiday !important;
       }
       &:hover {
-        color: darken($holiday, 10%) !important;
+        color: color.adjust($holiday, $lightness: -10%) !important;
         .material-icons-round {
-          color: darken($holiday, 10%) !important;
+          color: color.adjust($holiday, $lightness: -10%) !important;
         }
       }
     }
@@ -188,7 +188,7 @@ const timeOfDayClass = computed(() => {
     }
 
     &:active {
-      transform: scale(0.98) !important;
+      transform: translate3d(0, 0, 0) scale(0.98) !important;
       box-shadow: 0 1px 3px rgba($holiday, 0.2) !important;
     }
   }
@@ -217,7 +217,7 @@ const timeOfDayClass = computed(() => {
   }
 
   &:not(.is-past):active:not(.is-holiday) {
-    transform: scale(0.98);
+    transform: translate3d(0, 0, 0) scale(0.98);
     box-shadow: none !important;
   }
 

@@ -125,7 +125,7 @@ const updateShiftsForDate = (date: Date, newShifts: Shift[]) => {
 </script>
 
 <style lang="scss" scoped>
-@import '../../styles/abstracts/variables';
+@use '../../styles/main' as *;
 
 .month-view {
   &__days {

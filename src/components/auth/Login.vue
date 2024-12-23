@@ -45,7 +45,8 @@ const handleLogin = () => {
 </script>
 
 <style lang="scss" scoped>
-@import '../../styles/abstracts/variables';
+@use 'sass:color';
+@use '../../styles/main' as *;
 
 .login {
   min-height: 100vh;
@@ -157,7 +158,7 @@ const handleLogin = () => {
   box-shadow: 0 1px 3px rgba($primary, 0.3);
 
   &:hover {
-    background: darken($primary, 5%);
+    background: color.adjust($primary, $lightness: -5%);
     box-shadow: 0 2px 4px rgba($primary, 0.4);
     transform: translateY(-1px);
   }

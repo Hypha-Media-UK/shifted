@@ -181,7 +181,7 @@ const toggleHoliday = () => {
 </script>
 
 <style lang="scss" scoped>
-@import '../../styles/abstracts/variables';
+@use '../../styles/main' as *;
 
 .shift-editor {
   position: fixed;
@@ -371,7 +371,7 @@ const toggleHoliday = () => {
     }
 
     &:active:not(:disabled) {
-      transform: scale(0.96);
+      transform: translate3d(0, 0, 0) scale(0.96);
       box-shadow: none;
     }
   }
@@ -512,14 +512,14 @@ const toggleHoliday = () => {
 @keyframes scale-in {
   0% {
     opacity: 0;
-    transform: scale(0.95);
+    transform: translate3d(0, 0, 0) scale(0.95);
   }
   60% {
-    transform: scale(1.02);
+    transform: translate3d(0, 0, 0) scale(1.02);
   }
   100% {
     opacity: 1;
-    transform: scale(1);
+    transform: translate3d(0, 0, 0) scale(1);
   }
 }
 </style>

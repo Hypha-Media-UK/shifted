@@ -69,7 +69,7 @@ onMounted(async () => {
 </script>
 
 <style lang="scss" scoped>
-@import '../../styles/abstracts/variables';
+@use '../../styles/main' as *;
 
 .year-view {
   &__months {

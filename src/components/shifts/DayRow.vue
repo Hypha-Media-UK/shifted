@@ -167,7 +167,7 @@ const applyClipboardShift = () => {
 </script>
 
 <style lang="scss" scoped>
-@import '../../styles/abstracts/variables';
+@use '../../styles/main' as *;
 
 .day-row {
   border: 1px solid rgba($border, 0.6);
@@ -324,7 +324,7 @@ const applyClipboardShift = () => {
     }
 
     &:active:not(.is-disabled) {
-      transform: scale(0.96);
+      transform: translate3d(0, 0, 0) scale(0.96);
       box-shadow: none;
     }
   }
