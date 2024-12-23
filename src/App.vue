@@ -532,6 +532,11 @@ onMounted(() => {
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
+      padding: 0 $spacing-md;
+
+      @media (max-width: $breakpoint-sm) {
+        padding: 0 $spacing-sm;
+      }
     }
   }
 
@@ -608,6 +613,8 @@ onMounted(() => {
     }
 
     .container {
+      padding: 0 $spacing-md;
+
       @media (max-width: $breakpoint-sm) {
         padding: 0 $spacing-sm;
       }
