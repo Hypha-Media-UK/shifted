@@ -82,6 +82,27 @@
             @select-date="handleDateSelect"
           />
         </Transition>
+
+        <div class="danger-actions">
+          <div class="danger-actions__container">
+            <button 
+              type="button"
+              class="danger-actions__btn"
+              @click="handleDeleteShifts"
+            >
+              <span class="material-icons-round">delete_sweep</span>
+              Delete All Shifts
+            </button>
+            <button 
+              type="button"
+              class="danger-actions__btn"
+              @click="handleDeleteAccount"
+            >
+              <span class="material-icons-round">delete_forever</span>
+              Delete Account
+            </button>
+          </div>
+        </div>
       </div>
     </main>
 
@@ -373,6 +394,36 @@ const saveData = () => {
     localStorage.setItem(`${STORAGE_KEY}-${currentUser.value}`, JSON.stringify(dataToSave));
   } catch (error) {
     console.error('Error saving data to localStorage:', error);
+  }
+};
+
+// Delete all shifts but keep the account
+const handleDeleteShifts = () => {
+  if (!currentUser.value) return;
+  
+  if (confirm('Are you sure you want to delete all your shifts? This action cannot be undone.')) {
+    // Clear shifts
+    shifts.value = {};
+    // Save empty shifts to localStorage
+    saveData();
+  }
+};
+
+// Delete user and their data
+const handleDeleteAccount = () => {
+  if (!currentUser.value) return;
+  
+  if (confirm('Are you sure you want to delete your account? This will permanently remove your account and all your shift data.')) {
+    // Remove user's shift data
+    localStorage.removeItem(`${STORAGE_KEY}-${currentUser.value}`);
+    // Remove user
+    localStorage.removeItem('shift-tracker-user');
+    // Reset app state
+    currentUser.value = null;
+    shifts.value = {};
+    selectedDate.value = undefined;
+    currentView.value = 'month';
+    currentDate.value = new Date();
   }
 };
 
@@ -741,5 +792,72 @@ onMounted(() => {
 .fade-scale-leave-to {
   opacity: 0;
   transform: scale(0.98) translateY(10px);
+}
+
+.danger-actions {
+  margin-top: $spacing-xl;
+  position: relative;
+
+  @media (max-width: $breakpoint-sm) {
+    min-width: 0;
+  }
+
+  &__container {
+    display: flex;
+    background: rgba($danger, 0.1);
+    padding: $spacing-xs;
+    border-radius: $border-radius;
+    gap: $spacing-xs;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  &__btn {
+    flex: 1;
+    padding: $spacing-sm $spacing-lg;
+    border: none;
+    border-radius: $border-radius-sm;
+    background: transparent;
+    color: rgba($danger, 0.8);
+    font-size: $font-size-base;
+    font-weight: $font-weight-medium;
+    cursor: pointer;
+    transition: all $transition-speed ease;
+    white-space: nowrap;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-sm;
+
+    @media (max-width: $breakpoint-sm) {
+      padding: $spacing-sm;
+    }
+
+    .material-icons-round {
+      font-size: 1.2rem;
+    }
+
+    &:hover {
+      color: $danger;
+      background: rgba($danger, 0.1);
+    }
+
+    &.active {
+      background: $danger;
+      color: white;
+      box-shadow: $shadow-sm;
+
+      &:hover {
+        transform: translateY(-1px);
+        box-shadow: $shadow-md;
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+  }
 }
 </style>
