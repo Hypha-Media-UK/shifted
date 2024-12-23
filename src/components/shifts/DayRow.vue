@@ -229,7 +229,7 @@ const applyClipboardShift = () => {
 
     @media (max-width: $breakpoint-sm) {
       padding: $spacing-md;
-      gap: $spacing-sm;
+      gap: $spacing-md;
     }
 
     &:hover {
@@ -248,7 +248,7 @@ const applyClipboardShift = () => {
     flex-shrink: 0;
 
     @media (max-width: $breakpoint-sm) {
-      min-width: 48px;
+      min-width: 30px;
     }
   }
 
@@ -282,7 +282,7 @@ const applyClipboardShift = () => {
     overflow: hidden;
 
     @media (max-width: $breakpoint-sm) {
-      gap: $spacing-xs;
+      gap: $spacing-sm;
     }
   }
 

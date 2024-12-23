@@ -45,8 +45,8 @@ const handleLogin = () => {
 </script>
 
 <style lang="scss" scoped>
-@use 'sass:color';
 @use '../../styles/main' as *;
+@use 'sass:color';
 
 .login {
   min-height: 100vh;

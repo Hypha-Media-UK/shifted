@@ -83,8 +83,8 @@ const timeOfDayClass = computed(() => {
 </script>
 
 <style lang="scss" scoped>
-@use 'sass:color';
 @use '../../styles/main' as *;
+@use 'sass:color';
 
 .shift-pill {
   padding: $spacing-xs $spacing-sm;
@@ -251,21 +251,19 @@ const timeOfDayClass = computed(() => {
     }
 
     .material-icons-round {
-      font-size: 1rem;
+      font-size: 0.9rem;
       flex-shrink: 0;
     }
 
     @media (max-width: $breakpoint-sm) {
-      .material-icons-round {
-        display: none;
-      }
+      font-size: 0.75rem;
     }
   }
 
   &__delete {
-    width: 20px;
-    height: 20px;
-    min-width: 20px;
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
     border-radius: $border-radius-sm;
     border: none;
     background: transparent !important;
@@ -278,8 +276,18 @@ const timeOfDayClass = computed(() => {
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     flex-shrink: 0;
 
+    @media (max-width: $breakpoint-sm) {
+      width: 16px;
+      height: 16px;
+      min-width: 16px;
+    }
+
     .material-icons-round {
-      font-size: 1rem;
+      font-size: 0.9rem;
+
+      @media (max-width: $breakpoint-sm) {
+        font-size: 0.8rem;
+      }
     }
 
     &:hover {
@@ -289,9 +297,10 @@ const timeOfDayClass = computed(() => {
   }
 
   @media (max-width: $breakpoint-sm) {
-    padding: $spacing-xs;
+    padding: calc($spacing-xs * 0.75);
     font-size: $font-size-sm;
-    max-width: 100px;
+    max-width: 135px;
+    gap: calc($spacing-xs * 0.75);
   }
 }
 </style>
